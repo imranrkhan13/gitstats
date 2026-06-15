@@ -1,3 +1,13 @@
+// github.js — GitStatus data layer
+// Changes vs original:
+//  • Better streak: uses real dates with UTC-safe comparison, counts today OR yesterday
+//  • Pulls PR count, Review count, Issue count from events
+//  • Event type breakdown pie data
+//  • Most active day-of-week & hour-of-day from events
+//  • Repo creation timeline (sorted by pushed_at)
+//  • Pinned-style "recently active" repos surfaced separately
+//  • Commit messages extracted for word cloud data
+
 import { LANG_COLORS } from './constants.js'
 import { detectRepoType, getMonthLabels, calcScore, seededRandom, hashString, detectDevType, ageTier, influenceRatio, extractTopTopics, repoHealth } from './utils.js'
 
@@ -16,59 +26,185 @@ export async function fetchGitHub(username) {
   return processData(user, Array.isArray(repos) ? repos : [], Array.isArray(events) ? events : [])
 }
 
+// ── UTC-safe "today" and "yesterday" strings ─────────────────────────────────
+function utcToday() {
+  return new Date().toISOString().slice(0, 10)
+}
+function utcYesterday() {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+function daysBetween(a, b) {
+  // Returns positive integer — number of calendar days between two "YYYY-MM-DD" strings
+  return Math.round((new Date(b) - new Date(a)) / 86400000)
+}
+
 // ── Real streak from events ──────────────────────────────────────────────────
 function calcStreakFromEvents(events) {
-  // Pull unique days that had push/create/pr activity
+  const ACTIVITY_TYPES = new Set([
+    'PushEvent', 'PullRequestEvent', 'CreateEvent',
+    'IssuesEvent', 'IssueCommentEvent', 'PullRequestReviewEvent',
+    'PullRequestReviewCommentEvent', 'CommitCommentEvent',
+  ])
+
   const activeDays = new Set()
   events.forEach(e => {
-    if (['PushEvent','PullRequestEvent','CreateEvent','IssuesEvent','IssueCommentEvent','PullRequestReviewEvent'].includes(e.type)) {
-      const day = e.created_at?.slice(0, 10) // "YYYY-MM-DD"
-      if (day) activeDays.add(day)
+    if (ACTIVITY_TYPES.has(e.type) && e.created_at) {
+      activeDays.add(e.created_at.slice(0, 10))
     }
   })
 
   const sorted = [...activeDays].sort((a, b) => b.localeCompare(a)) // newest first
-
   if (!sorted.length) return { streak: 0, longestStreak: 0, lastActive: null, activeDays: [] }
 
-  // Check if most recent active day is today or yesterday (otherwise streak is broken)
-  const today = new Date()
-  const todayStr = today.toISOString().slice(0, 10)
-  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().slice(0, 10)
-
+  const today = utcToday()
+  const yesterday = utcYesterday()
   const mostRecent = sorted[0]
-  const streakActive = mostRecent === todayStr || mostRecent === yesterdayStr
 
-  // Count current streak from most recent
+  // Streak is only "alive" if last activity was today or yesterday
+  const streakAlive = mostRecent === today || mostRecent === yesterday
+
+  // Count current streak backwards from mostRecent
   let streak = 0
-  if (streakActive) {
-    let checkDate = new Date(mostRecent)
+  if (streakAlive) {
+    // Walk backwards day-by-day from mostRecent
+    const startDate = new Date(mostRecent + 'T00:00:00Z')
     for (let i = 0; i < 365; i++) {
-      const ds = checkDate.toISOString().slice(0, 10)
+      const ds = startDate.toISOString().slice(0, 10)
       if (activeDays.has(ds)) {
         streak++
-        checkDate.setDate(checkDate.getDate() - 1)
-      } else break
+        startDate.setUTCDate(startDate.getUTCDate() - 1)
+      } else {
+        break
+      }
     }
   }
 
   // Longest streak over all known active days
-  let longest = 0, cur = 0
-  let prev = null
-  ;[...activeDays].sort().forEach(d => {
-    if (!prev) { cur = 1 }
-    else {
-      const diff = (new Date(d) - new Date(prev)) / 86400000
-      if (diff === 1) cur++
-      else cur = 1
+  const allSorted = [...activeDays].sort()
+  let longest = 0, cur = 0, prev = null
+  allSorted.forEach(d => {
+    if (!prev) {
+      cur = 1
+    } else {
+      const diff = daysBetween(prev, d)
+      cur = diff === 1 ? cur + 1 : 1
     }
     if (cur > longest) longest = cur
     prev = d
   })
-  if (streak > longest) longest = streak
+  longest = Math.max(longest, streak)
 
-  return { streak, longestStreak: Math.max(longest, streak), lastActive: sorted[0], activeDays: sorted }
+  return { streak, longestStreak: longest, lastActive: sorted[0], activeDays: sorted }
+}
+
+// ── Event stats — PR count, review count, issues opened ─────────────────────
+function calcEventStats(events) {
+  let pushCount = 0, prCount = 0, reviewCount = 0, issueCount = 0,
+      createCount = 0, starCount = 0, forkCount = 0
+
+  const dayOfWeekCounts = Array(7).fill(0)   // 0=Sun … 6=Sat
+  const hourCounts      = Array(24).fill(0)  // 0-23 UTC
+  const commitMessages  = []
+  let totalCommits = 0
+
+  events.forEach(e => {
+    const d = e.created_at ? new Date(e.created_at) : null
+    if (d) {
+      dayOfWeekCounts[d.getUTCDay()]++
+      hourCounts[d.getUTCHours()]++
+    }
+    switch (e.type) {
+      case 'PushEvent':
+        pushCount++
+        totalCommits += e.payload?.size || 1
+        ;(e.payload?.commits || []).slice(0, 2).forEach(c => {
+          const msg = c.message?.split('\n')[0]?.trim()
+          if (msg && msg.length > 3 && msg.length < 80) commitMessages.push(msg)
+        })
+        break
+      case 'PullRequestEvent':    prCount++;     break
+      case 'PullRequestReviewEvent': reviewCount++; break
+      case 'IssuesEvent':         issueCount++;  break
+      case 'CreateEvent':         createCount++; break
+      case 'WatchEvent':          starCount++;   break
+      case 'ForkEvent':           forkCount++;   break
+    }
+  })
+
+  // Most active day-of-week
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+  const mostActiveDayIdx = dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts))
+  const mostActiveDay = DAY_NAMES[mostActiveDayIdx]
+
+  // Most active hour bucket
+  const mostActiveHourIdx = hourCounts.indexOf(Math.max(...hourCounts))
+  const mostActiveHour = mostActiveHourIdx < 6 ? 'Late night 🌙'
+    : mostActiveHourIdx < 12 ? 'Morning ☀️'
+    : mostActiveHourIdx < 17 ? 'Afternoon 🌤'
+    : mostActiveHourIdx < 21 ? 'Evening 🌆'
+    : 'Night 🌙'
+
+  // Event breakdown for pie chart
+  const eventBreakdown = [
+    { name: 'Commits', value: pushCount,   color: 'var(--br2)' },
+    { name: 'PRs',     value: prCount,     color: 'var(--blue)' },
+    { name: 'Reviews', value: reviewCount, color: '#8b5cf6' },
+    { name: 'Issues',  value: issueCount,  color: 'var(--red)' },
+    { name: 'Created', value: createCount, color: 'var(--green)' },
+    { name: 'Stars',   value: starCount,   color: 'var(--amber)' },
+    { name: 'Forks',   value: forkCount,   color: 'var(--purple)' },
+  ].filter(e => e.value > 0)
+
+  // Day-of-week activity chart
+  const dayActivity = DAY_NAMES.map((name, i) => ({ name, count: dayOfWeekCounts[i] }))
+
+  return {
+    pushCount, prCount, reviewCount, issueCount, createCount,
+    starCount, forkCount, totalCommits,
+    mostActiveDay, mostActiveHour,
+    eventBreakdown, dayActivity, commitMessages,
+  }
+}
+
+// ── Monthly commits from events ───────────────────────────────────────────────
+function buildMonthlyCommits(events, rng) {
+  const commitMap = {}
+  events.forEach(e => {
+    if (e.type === 'PushEvent' && e.created_at) {
+      const month = e.created_at.slice(0, 7)
+      commitMap[month] = (commitMap[month] || 0) + (e.payload?.size || 1)
+    }
+  })
+
+  const labels = getMonthLabels(12)
+  const now = new Date()
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
+    const key = d.toISOString().slice(0, 7)
+    const real = commitMap[key]
+    // Mark real vs estimated so UI can show a badge
+    return {
+      month: labels[i],
+      commits: real !== undefined ? real : Math.round(4 + rng() * 40 + i * 0.8),
+      isReal: real !== undefined,
+    }
+  })
+}
+
+// ── Repo creation timeline ────────────────────────────────────────────────────
+function buildRepoTimeline(repos) {
+  return [...repos]
+    .filter(r => r.created_at)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    .slice(-20) // last 20
+    .map(r => ({
+      name: r.name,
+      created: r.created_at.slice(0, 7),
+      stars: r.stargazers_count || 0,
+      lang: r.language || '—',
+    }))
 }
 
 export function processData(user, repos, events) {
@@ -112,38 +248,69 @@ export function processData(user, repos, events) {
     }))
   topByStars.forEach(r => { r.health = repoHealth(r) })
 
+  // Recently active repos (different from top by stars)
+  const recentlyActive = [...nonFork]
+    .sort((a, b) => new Date(b.pushed_at || 0) - new Date(a.pushed_at || 0))
+    .slice(0, 6)
+    .map(r => ({
+      name: r.name, desc: r.description || '',
+      stars: r.stargazers_count, forks: r.forks_count,
+      lang: r.language || '—', updated: r.pushed_at || r.updated_at,
+      url: r.html_url, type: detectRepoType(r),
+      topics: r.topics || [], openIssues: r.open_issues_count || 0,
+    }))
+
   const spotlightRepo = topByStars[0] || null
 
-  const labels = getMonthLabels(12)
+  const monthlyCommits = buildMonthlyCommits(events, rng)
 
-  // Real monthly commit counts from events
-  const commitMap = {}
-  events.forEach(e => {
-    if (e.type === 'PushEvent') {
-      const month = e.created_at?.slice(0, 7) // "YYYY-MM"
-      if (month) commitMap[month] = (commitMap[month] || 0) + (e.payload?.size || 1)
-    }
-  })
-
-  const now = new Date()
-  const monthlyCommits = Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
-    const key = d.toISOString().slice(0, 7)
-    const label = labels[i]
-    const real = commitMap[key]
-    // Use real data if available, otherwise deterministic estimate
-    return { month: label, commits: real !== undefined ? real : Math.round(4 + rng() * 40 + i * 0.8) }
-  })
-
+  // Heatmap (seeded decorative — GitHub doesn't expose this via REST)
   const contribGrid = Array.from({ length: 52 * 7 }, (_, i) => {
     const w = Math.floor(i / 7), b = (w > 4 && w < 48) ? 0.18 : 0, r = rng()
     return r < 0.30 + b ? 0 : r < 0.52 + b ? 1 : r < 0.70 + b ? 2 : r < 0.86 + b ? 3 : 4
   })
 
-  // REAL streak from events
+  // Real streak
   const streakData = calcStreakFromEvents(events)
-  const streak = streakData.streak
-  const longestStreak = streakData.longestStreak
+  const { streak, longestStreak } = streakData
+
+  // Event stats
+  const eventStats = calcEventStats(events)
+
+  // Repo timeline
+  const repoTimeline = buildRepoTimeline(nonFork)
+
+  // Activity feed
+  const activity = events.slice(0, 20).map(e => {
+    const type = e.type === 'PushEvent' ? 'commit'
+      : e.type === 'PullRequestEvent' ? 'pr'
+      : e.type === 'PullRequestReviewEvent' ? 'review'
+      : e.type === 'CreateEvent' ? 'create'
+      : e.type === 'WatchEvent' ? 'star'
+      : e.type === 'ForkEvent' ? 'fork'
+      : e.type === 'IssuesEvent' ? 'issue'
+      : 'other'
+    let msg = ''
+    if (e.type === 'PushEvent')
+      msg = e.payload?.commits?.[0]?.message?.split('\n')[0] || 'Pushed commits'
+    else if (e.type === 'PullRequestEvent')
+      msg = `${e.payload?.action === 'opened' ? 'Opened PR' : e.payload?.action === 'merged' ? 'Merged PR' : 'PR activity'}: ${e.payload?.pull_request?.title || ''}`
+    else if (e.type === 'PullRequestReviewEvent')
+      msg = `Reviewed PR: ${e.payload?.pull_request?.title || ''}`
+    else if (e.type === 'CreateEvent')
+      msg = `Created ${e.payload?.ref_type}${e.payload?.ref ? ` "${e.payload.ref}"` : ''}`
+    else if (e.type === 'WatchEvent')
+      msg = `Starred ${e.repo?.name || 'a repository'}`
+    else if (e.type === 'ForkEvent')
+      msg = `Forked ${e.repo?.name || 'a repository'}`
+    else if (e.type === 'IssuesEvent')
+      msg = `${e.payload?.action === 'opened' ? 'Opened issue' : 'Issue activity'}: ${e.payload?.issue?.title || ''}`
+    else if (e.type === 'IssueCommentEvent')
+      msg = `Commented on issue: ${e.payload?.issue?.title || ''}`
+    else
+      msg = e.type.replace('Event', ' event')
+    return { type, msg, repo: e.repo?.name?.split('/')[1] || '', time: e.created_at }
+  }).filter(a => a.msg)
 
   const memberYears = Math.max(1, new Date().getFullYear() - new Date(user.created_at).getFullYear())
   const score = calcScore(nonFork.length, user.followers, totalStars, totalForks, memberYears, languages.length)
@@ -154,19 +321,6 @@ export function processData(user, repos, events) {
   const repoTypes = Object.entries(typeMap)
     .sort((a, b) => b[1] - a[1]).slice(0, 8)
     .map(([type, count]) => ({ type, count, color: RTYPE_COLORS[type] || '#a08060' }))
-
-  const activity = events.slice(0, 12).map(e => {
-    const type = e.type==='PushEvent'?'commit':e.type==='PullRequestEvent'?'pr':e.type==='CreateEvent'?'create':e.type==='WatchEvent'?'star':e.type==='ForkEvent'?'fork':e.type==='IssuesEvent'?'issue':'other'
-    let msg = ''
-    if(e.type==='PushEvent') msg=e.payload?.commits?.[0]?.message?.split('\n')[0]||'Pushed commits'
-    else if(e.type==='PullRequestEvent') msg=e.payload?.pull_request?.title||'Pull request'
-    else if(e.type==='CreateEvent') msg=`Created ${e.payload?.ref_type}${e.payload?.ref?` "${e.payload.ref}"`:''}`
-    else if(e.type==='WatchEvent') msg='Starred a repository'
-    else if(e.type==='ForkEvent') msg=`Forked ${e.repo?.name||'a repository'}`
-    else if(e.type==='IssuesEvent') msg=e.payload?.issue?.title||'Issue activity'
-    else msg=e.type.replace('Event',' event')
-    return { type, msg, repo: e.repo?.name?.split('/')[1]||'', time: e.created_at }
-  }).filter(a => a.msg)
 
   const avgStars = nonFork.length ? Math.round(totalStars / nonFork.length) : 0
   const backLangs  = ['Go','Rust','Python','Java','C++','C#','Ruby','PHP','Scala','Elixir','Kotlin','Haskell']
@@ -186,20 +340,26 @@ export function processData(user, repos, events) {
     { subject:'Impact',    A: Math.min(100, Math.round(Math.log10(totalForks+1)*38)) },
   ]
 
-  const devType   = detectDevType(languages, repoTypes)
-  const githubAge = ageTier(memberYears)
-  const influence = influenceRatio(user.followers, user.following)
-  const topTopics = extractTopTopics(nonFork)
+  const devType        = detectDevType(languages, repoTypes)
+  const githubAge      = ageTier(memberYears)
+  const influence      = influenceRatio(user.followers, user.following)
+  const topTopics      = extractTopTopics(nonFork)
   const estContributions = Math.round(nonFork.reduce((a, r) => a + Math.max(1, Math.round(r.size / 6)), 0))
 
   return {
     user, totalStars, totalForks, totalWatchers,
     nonForkCount: nonFork.length,
-    languages, topByStars, monthlyCommits, contribGrid,
-    streak, longestStreak, lastActive: streakData.lastActive,
+    languages, topByStars, recentlyActive,
+    monthlyCommits, contribGrid,
+    streak, longestStreak,
+    lastActive: streakData.lastActive,
+    activeDays: streakData.activeDays,
     score, activity, repoTypes,
     memberYears, avgStars, stack, radarData,
     spotlightRepo, devType, githubAge, influence, topTopics, estContributions,
     allRepos: nonFork,
+    // NEW fields
+    eventStats,      // { pushCount, prCount, reviewCount, issueCount, totalCommits, mostActiveDay, mostActiveHour, eventBreakdown, dayActivity }
+    repoTimeline,    // [{ name, created, stars, lang }]
   }
 }
