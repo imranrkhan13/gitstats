@@ -46,7 +46,7 @@ function MetricDuel({ label, icon, v1, v2, fmtFn, u1, u2, higherBetter = true })
         {!tie && win1 && <WinBadge text="WINS" />}
         {!tie && win2 && <span style={{ fontSize: 9, background: 'var(--bg2)', color: 'var(--br3)', padding: '2px 7px', borderRadius: 20, fontWeight: 700, border: '1px solid var(--border2)' }}>WINS</span>}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+      <div className="rg2-keep" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
         {[{ v: v1, u: u1, wins: win1 && !tie }, { v: v2, u: u2, wins: win2 && !tie }].map(({ v, u, wins }) => (
           <div key={u.login} style={{ background: wins ? 'var(--br)' : 'rgba(0,0,0,0.025)', border: `1px solid ${wins ? 'transparent' : 'var(--border)'}`, borderRadius: 9, padding: '11px 12px', position: 'relative', transition: 'background 0.2s' }}>
             {wins && <div style={{ position: 'absolute', top: 8, right: 9 }}><CheckIcon size={11} color="#f5c842" /></div>}
@@ -171,12 +171,12 @@ export function CompareView({ data1, onClose }) {
       </div>
 
       {/* Search row */}
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'var(--bg)', border: '1.5px solid var(--border2)', borderRadius: 'var(--r)', padding: '7px 13px', flex: '0 0 auto' }}>
+      <div className="cv-searchrow" style={{ padding: '14px 24px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="cv-userchip" style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'var(--bg)', border: '1.5px solid var(--border2)', borderRadius: 'var(--r)', padding: '7px 13px', flex: '0 0 auto' }}>
           {u1.avatar_url && <img src={u1.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px solid var(--border)' }} />}
           <div><div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{u1.name || u1.login}</div><div style={{ fontSize: 10, color: 'var(--text3)' }}>@{u1.login}</div></div>
         </div>
-        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text3)', padding: '0 2px', flexShrink: 0 }}>VS</div>
+        <div className="cv-vs" style={{ fontSize: 13, fontWeight: 800, color: 'var(--text3)', padding: '0 2px', flexShrink: 0 }}>VS</div>
         <input value={username2} onChange={e => setUsername2(e.target.value)} onKeyDown={e => e.key === 'Enter' && load()} placeholder="Enter second username…"
           style={{ flex: 1, minWidth: 180, height: 42, padding: '0 14px', border: '1.5px solid var(--border2)', borderRadius: 'var(--r)', background: 'var(--bg)', color: 'var(--text)', fontSize: 14, outline: 'none', fontFamily: 'Inter,sans-serif', transition: 'border-color 0.2s' }}
           onFocus={e => e.target.style.borderColor = 'var(--br2)'} onBlur={e => e.target.style.borderColor = 'var(--border2)'} />
@@ -186,6 +186,13 @@ export function CompareView({ data1, onClose }) {
         </button>
         {error && <div style={{ width: '100%', fontSize: 13, color: 'var(--red)', fontWeight: 500, padding: '2px 0' }}>⚠ {error}</div>}
       </div>
+      <style>{`
+        @media (max-width: 480px) {
+          .cv-searchrow { padding: 14px 16px !important; }
+          .cv-userchip { width: 100%; }
+          .cv-vs { width: 100%; text-align: center; padding: 2px 0 !important; }
+        }
+      `}</style>
 
       {!data2 && (
         <div style={{ padding: '56px 24px', textAlign: 'center', color: 'var(--text4)', fontSize: 14 }}>
@@ -240,7 +247,7 @@ export function CompareView({ data1, onClose }) {
               {/* OVERVIEW */}
               {tab === 'overview' && (
                 <div className="animate-fade">
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                  <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                     {[{ d: data1, u: u1, iw: winner === 'user1' }, { d: data2, u: u2, iw: winner === 'user2' }].map(({ d, u, iw }) => (
                       <div key={u.login} style={{ background: iw ? 'linear-gradient(135deg,#2a1208,#3d1e10)' : 'var(--bg)', border: `1.5px solid ${iw ? 'var(--br2)' : 'var(--border)'}`, borderRadius: 'var(--r2)', padding: '20px', textAlign: 'center', position: 'relative', transition: 'all 0.3s' }}>
                         {iw && <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(245,200,66,0.18)', border: '1px solid rgba(245,200,66,0.32)', borderRadius: 20, padding: '3px 9px', display: 'flex', alignItems: 'center', gap: 4 }}><TrophyIcon size={10} color="#f5c842" /><span style={{ fontSize: 10, fontWeight: 700, color: '#f5c842', letterSpacing: '0.04em' }}>WINNER</span></div>}
@@ -253,7 +260,7 @@ export function CompareView({ data1, onClose }) {
                         <a href={`https://github.com/${u.login}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: iw ? 'rgba(255,255,255,0.45)' : 'var(--text3)', textDecoration: 'none', display: 'block', marginBottom: 14 }}>@{u.login}</a>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}><ScoreRing score={d.score} size={80} /></div>
                         {u.bio && <p style={{ fontSize: 11, color: iw ? 'rgba(255,255,255,0.38)' : 'var(--text3)', marginTop: 10, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{u.bio}</p>}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 14 }}>
+                        <div className="rg3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 14 }}>
                           {[[fmt(d.totalStars), 'Stars'], [d.nonForkCount, 'Repos'], [fmt(u.followers), 'Followers']].map(([v, l]) => (
                             <div key={l} style={{ background: iw ? 'rgba(255,255,255,0.07)' : 'var(--bg2)', borderRadius: 8, padding: '7px 4px', textAlign: 'center' }}>
                               <div style={{ fontSize: 14, fontWeight: 800, color: iw ? '#f5c842' : 'var(--text)', letterSpacing: '-0.02em' }}>{v}</div>
@@ -273,7 +280,7 @@ export function CompareView({ data1, onClose }) {
               {/* REPOS */}
               {tab === 'repos' && (
                 <div className="animate-fade">
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                  <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
                     {[{ d: data1, u: u1 }, { d: data2, u: u2 }].map(({ d, u }) => (
                       <div key={u.login}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14, padding: '10px 14px', background: 'var(--bg2)', borderRadius: 'var(--r)', border: '1px solid var(--border)' }}>
@@ -357,7 +364,7 @@ export function CompareView({ data1, onClose }) {
                             </div>
                           </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                        <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                           {[{ d: data1, u: u1 }, { d: data2, u: u2 }].map(({ d, u }) => (
                             <div key={u.login} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -501,7 +508,7 @@ export function CompareView({ data1, onClose }) {
                   )}
 
                   {/* Streak calendars */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                     {[{ d: data1, u: u1 }, { d: data2, u: u2 }].map(({ d, u }) => (
                       <div key={u.login} style={{ background: 'linear-gradient(140deg,#2a1208 0%,#1a0a04 100%)', borderRadius: 'var(--r)', padding: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -510,7 +517,7 @@ export function CompareView({ data1, onClose }) {
                           <span style={{ marginLeft: 'auto', fontSize: 13, color: '#fb923c', fontWeight: 800 }}>{d.streak}d</span>
                         </div>
                         <MiniCalendar activeDays={d.activeDays} login={u.login} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
+                        <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
                           <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: '10px 12px' }}>
                             <div style={{ fontSize: 22, fontWeight: 900, color: '#fb923c', letterSpacing: '-0.03em' }}>{d.streak}</div>
                             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 3 }}>Current streak</div>
@@ -525,7 +532,7 @@ export function CompareView({ data1, onClose }) {
                   </div>
 
                   {/* Side-by-side stat list */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {[{ d: data1, u: u1 }, { d: data2, u: u2 }].map(({ d, u }) => (
                       <div key={u.login} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>

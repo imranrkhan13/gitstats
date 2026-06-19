@@ -159,7 +159,7 @@ function ProfileCard({ data, cardRef }) {
       )}
 
       {/* Streak row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+      <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
         <div style={{ background: 'rgba(249,115,22,0.11)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: 11, padding: '12px 14px' }}>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
             <FireIcon size={9} color="rgba(255,255,255,0.3)" />Current streak
@@ -487,15 +487,32 @@ export function ShareCard({ data, data2 = null, show, onClose }) {
           </button>
         </div>
 
-        {/* Card preview */}
+        {/* Card preview — scales down visually on narrow screens so the 420px-wide
+            card fits without horizontal scrolling. The card's actual DOM width stays
+            420px (unchanged) so html2canvas always exports a consistent, correctly-sized image. */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-          {isCompare
-            ? <CompareCard data1={data} data2={data2} cardRef={cardRef} />
-            : <ProfileCard data={data} cardRef={cardRef} />}
+          <div className="gs-card-scale-inner">
+            {isCompare
+              ? <CompareCard data1={data} data2={data2} cardRef={cardRef} />
+              : <ProfileCard data={data} cardRef={cardRef} />}
+          </div>
         </div>
+        <style>{`
+          @media (max-width: 460px) {
+            .gs-card-scale-inner { zoom: 0.82; }
+          }
+          @media (max-width: 400px) {
+            .gs-card-scale-inner { zoom: 0.7; }
+          }
+          @supports not (zoom: 1) {
+            @media (max-width: 460px) {
+              .gs-card-scale-inner { transform: scale(0.82); transform-origin: top center; margin-bottom: -18%; }
+            }
+          }
+        `}</style>
 
         {/* Primary actions */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+        <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <button onClick={handleDownload} disabled={isRendering} style={{ ...btnBase, ...(status === 'done-download' ? doneStyle : {}) }}>
             <BtnIcon type="download" />
             {status === 'done-download' ? 'Saved!' : isRendering ? 'Working…' : 'Download PNG'}
@@ -506,7 +523,7 @@ export function ShareCard({ data, data2 = null, show, onClose }) {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+        <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <button onClick={handleCopyLink} disabled={isRendering} style={{ ...btnBase, ...(status === 'done-link' ? doneStyle : {}) }}>
             <BtnIcon type="link" />
             {status === 'done-link' ? 'Copied!' : 'Copy Link'}
@@ -518,7 +535,7 @@ export function ShareCard({ data, data2 = null, show, onClose }) {
         </div>
 
         {/* Social share buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        <div className="rg2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
           <button onClick={handleTwitter} style={{ ...btnBase, background: 'rgba(29,161,242,0.12)', borderColor: 'rgba(29,161,242,0.25)', color: '#1da1f2' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#1da1f2"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.26 5.632L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
             Share on X
