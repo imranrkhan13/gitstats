@@ -188,7 +188,12 @@ Member since: ${u.created_at?.slice(0, 4)}`
     { name: 'Mistral', call: callMistral },
     { name: 'Cohere', call: callCohere },
   ]
-
+  console.log({
+    GEMINI: !!import.meta.env.VITE_GEMINI_API,
+    GROK: !!import.meta.env.VITE_GROK_API,
+    MISTRAL: !!import.meta.env.VITE_MISTRAL_API,
+    COHERE: !!import.meta.env.VITE_COHERE_API,
+  })
   const startCooldown = (secs) => {
     setCooldown(secs)
     const tick = setInterval(() => {
