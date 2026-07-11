@@ -692,7 +692,7 @@ function ReposByYearChart({ reposByYear }) {
 
 function utcToday() { return new Date().toISOString().slice(0, 10) }
 
-export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation }) {
+export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation, onDescribeMe }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [repoSort, setRepoSort] = useState('stars')
   const [repoView, setRepoView] = useState('grid')
@@ -797,7 +797,12 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
                 <InfoIcon size={10} color="var(--text4)" /> How it's calculated
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={onDescribeMe} style={{ height: 42, padding: '0 18px', border: '1.5px solid var(--border2)', background: 'var(--surface)', color: 'var(--text2)', borderRadius: 'var(--r)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Inter,sans-serif', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = 'var(--green)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}>
+                💚 Describe Me
+              </button>
               <button onClick={onConstellation} style={{ height: 42, padding: '0 18px', border: '1.5px solid var(--border2)', background: 'var(--surface)', color: 'var(--text2)', borderRadius: 'var(--r)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Inter,sans-serif', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.color = '#8b5cf6' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}>
@@ -970,7 +975,7 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
           {recentlyActive?.length > 0 && (
             <Card style={{ marginBottom: 14 }} className="animate-fade-up">
               <SectionLabel right={<span style={{ fontSize: 11, color: 'var(--text4)' }}>by last push date</span>}>Recently Active</SectionLabel>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 9 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))', gap: 9 }}>
                 {recentlyActive.map(r => (
                   <a key={r.name} href={r.url || `https://github.com/${user.login}/${r.name}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                     <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '12px 14px', transition: 'border-color 0.15s,box-shadow 0.15s' }}
@@ -1018,7 +1023,7 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
               .gs-repos-controls { width: 100%; -webkit-overflow-scrolling: touch; }
             }
           `}</style>
-          <div style={{ display: repoView === 'grid' ? 'grid' : 'flex', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: repoView === 'grid' ? 'grid' : 'flex', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', flexDirection: 'column', gap: 10 }}>
             {sortedRepos.map(r => (
               <div key={r.name} onClick={() => setShowcaseRepo(r)} style={{ textDecoration: 'none', cursor: 'pointer' }}>
                 <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)', padding: repoView === 'grid' ? '16px 18px' : '13px 16px', cursor: 'pointer', transition: 'border-color 0.2s,box-shadow 0.2s', display: repoView === 'list' ? 'flex' : 'block', alignItems: repoView === 'list' ? 'center' : undefined, gap: repoView === 'list' ? 16 : undefined }}

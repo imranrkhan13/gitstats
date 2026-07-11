@@ -35,7 +35,7 @@
   --shadow3:  0 12px 40px rgba(61,32,16,0.14);
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -44,6 +44,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
 input, button, select, textarea { font-family: var(--font); }
 a { color: inherit; }

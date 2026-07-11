@@ -6,6 +6,7 @@ import { CompareView } from './components/CompareView.jsx'
 import { ShareCard } from './components/ShareCard.jsx'
 import { Wrapped } from './components/Wrapped.jsx'
 import { Constellation } from './components/Constellation.jsx'
+import { DescribeMe } from './components/DescribeMe.jsx'
 import { LoadingExperience } from './components/LoadingExperience.jsx'
 import { GithubIcon, BackIcon, ExternalIcon } from './components/Icons.jsx'
 import { BRAND } from './lib/brand.js'
@@ -80,6 +81,7 @@ export default function App() {
   const [showShare, setShowShare] = useState(false)
   const [showWrapped, setShowWrapped] = useState(false)
   const [showConstellation, setShowConstellation] = useState(false)
+  const [showDescribeMe, setShowDescribeMe] = useState(false)
   const [autoLoading, setAutoLoading] = useState(true)
   const [autoError, setAutoError] = useState('')
 
@@ -187,6 +189,7 @@ export default function App() {
         onCompare={() => setShowCompare(v => !v)}
         onWrapped={() => setShowWrapped(true)}
         onConstellation={() => setShowConstellation(true)}
+        onDescribeMe={() => setShowDescribeMe(true)}
       />
 
       <AnimatePresence>
@@ -204,6 +207,12 @@ export default function App() {
       <AnimatePresence>
         {showConstellation && (
           <Constellation data={data} onClose={() => setShowConstellation(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDescribeMe && (
+          <DescribeMe data={data} onClose={() => setShowDescribeMe(false)} />
         )}
       </AnimatePresence>
     </div>
