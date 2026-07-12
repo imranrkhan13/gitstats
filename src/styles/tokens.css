@@ -1,0 +1,144 @@
+/* ══════════════════════════════════════════════════════════════
+   ResumeIQ — Design Tokens
+   Warm white / stone / burnt-orange. Inter throughout. Minimal
+   borders, soft shadows reserved for floating surfaces only.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Surface & ink ── */
+  --bg:            #faf8f5;
+  --bg-sunken:      #f3efe9;
+  --surface:        #ffffff;
+  --surface-raised: #ffffff;
+
+  --ink:            #241f1a;
+  --ink-soft:       #4d453c;
+  --stone:          #6e655b;
+  --stone-soft:     #a79c8e;
+  --stone-faint:    #cbc0b2;
+
+  --hairline:       #e7e0d6;
+  --hairline-strong:#d9cfc0;
+
+  /* ── Accent: burnt orange (rust, not clay) ── */
+  --accent:         #b5501f;
+  --accent-hover:   #9c4318;
+  --accent-soft:    #f4e4d6;
+  --accent-softer:  #faf1e9;
+  --accent-ink:     #fff6ee;
+  --accent-ring:    rgba(181, 80, 31, 0.28);
+
+  /* ── Semantic ── */
+  --success:        #4b7a5c;
+  --success-soft:   #e7f0e8;
+  --warn:           #b4482f;
+  --warn-soft:      #f6e6e1;
+  --info:           #5f7c88;
+
+  /* ── Source identity colors (chips / evidence) ── */
+  --src-resume:     #4b7a5c;
+  --src-github:     #6e4a34;
+  --src-repo:       #b5501f;
+  --src-file:       #a8752f;
+  --src-ats:        #8a6d1f;
+  --src-jd:         #5f7c88;
+
+  /* ── Type ── */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Berkeley Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ── Radius: restrained, consistent ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  /* ── Shadow: reserved for floating surfaces (modals, dropdowns, popovers) ── */
+  --shadow-float: 0 8px 28px rgba(36, 31, 26, 0.12), 0 2px 6px rgba(36, 31, 26, 0.06);
+  --shadow-soft:  0 1px 3px rgba(36, 31, 26, 0.05);
+
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.12s;
+  --dur-base: 0.2s;
+  --dur-slow: 0.34s;
+}
+
+/* ── Legacy variable aliases ──
+   Several existing components reference an older --brown-*/--gray-*
+   naming scheme. Aliasing them here means every one of those
+   components automatically picks up the new palette with zero
+   changes to their own code. */
+:root {
+  --white:     var(--surface);
+  --font:      var(--font-ui);
+  --r8:  var(--r-sm);
+  --r12: var(--r-md);
+  --r20: 20px;
+  --r999: var(--r-pill);
+
+  --gray-50:  var(--bg-sunken);
+  --gray-200: var(--hairline);
+  --gray-300: var(--stone-faint);
+  --gray-400: var(--stone-soft);
+  --gray-500: var(--stone);
+
+  --brown-25:  var(--accent-softer);
+  --brown-50:  #faf1e7;
+  --brown-100: var(--accent-soft);
+  --brown-150: #edd3b8;
+  --brown-200: #e2bd94;
+  --brown-400: #c07a3e;
+  --brown-500: var(--accent);
+  --brown-600: var(--accent-hover);
+  --brown-700: #7a3714;
+  --brown-800: #4a2717;
+  --brown-900: var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+/* Visible keyboard focus, everywhere */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Slim, quiet scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--stone-faint); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--stone-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

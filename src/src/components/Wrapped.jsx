@@ -15,7 +15,7 @@ import { XIcon, DownloadIcon, CopyIcon, CheckIcon } from './Icons.jsx'
 import { BRAND } from '../lib/brand.js'
 import { LANG_COLORS, REPO_TYPE_COLORS } from '../lib/constants.js'
 
-function Slide({ eyebrow, children }) {
+function Slide({ eyebrow, icon, children }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
@@ -24,6 +24,15 @@ function Slide({ eyebrow, children }) {
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       style={{ maxWidth: 460, textAlign: 'center', padding: '0 24px' }}
     >
+      {icon && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5, rotate: -8 }} animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.05 }}
+          style={{ fontSize: 36, marginBottom: 10 }}
+        >
+          {icon}
+        </motion.div>
+      )}
       {eyebrow && <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--br4)', marginBottom: 14 }}>{eyebrow.toUpperCase()}</div>}
       {children}
     </motion.div>
@@ -194,10 +203,10 @@ export function Wrapped({ data, onClose }) {
         </Slide>
       ) },
       { key: 'howYouBuild', render: () => (
-        <Slide eyebrow="How you build"><Headline>{story.devTypeLine}</Headline><Sub>{story.consistency}</Sub></Slide>
+        <Slide eyebrow="How you build" icon="🛠️"><Headline>{story.devTypeLine}</Headline><Sub>{story.consistency}</Sub></Slide>
       ) },
       { key: 'whatYouBuild', render: () => (
-        <Slide eyebrow="What you build"><Headline>{story.repos}</Headline><Sub>{story.reach}</Sub>
+        <Slide eyebrow="What you build" icon="🚀"><Headline>{story.repos}</Headline><Sub>{story.reach}</Sub>
           <div style={{ display: 'flex', gap: 28, justifyContent: 'center', marginTop: 20 }}>
             <BigNumber value={data.nonForkCount} label="projects" />
             <BigNumber value={data.totalStars} label="stars" />
@@ -206,16 +215,16 @@ export function Wrapped({ data, onClose }) {
       ) },
     ]
     if (story.peakYear) list.push({ key: 'peakYear', render: () => (
-      <Slide eyebrow="Your strongest year"><Headline>{story.peakYear}</Headline><YearsChart reposByYear={data.reposByYear} peakYear={story.peakYear.match(/^\d{4}/)?.[0]} /></Slide>
+      <Slide eyebrow="Your strongest year" icon="📈"><Headline>{story.peakYear}</Headline><YearsChart reposByYear={data.reposByYear} peakYear={story.peakYear.match(/^\d{4}/)?.[0]} /></Slide>
     ) })
     if (story.focusArea) list.push({ key: 'focusArea', render: () => (
-      <Slide eyebrow="Where the time went"><Headline>{story.focusArea}</Headline><FocusDonut repoTypes={data.repoTypes} /></Slide>
+      <Slide eyebrow="Where the time went" icon="🧭"><Headline>{story.focusArea}</Headline><FocusDonut repoTypes={data.repoTypes} /></Slide>
     ) })
     list.push({ key: 'languages', render: () => (
-      <Slide eyebrow="Languages"><Headline>{story.languages}</Headline><LanguagesBar languages={data.languages} /></Slide>
+      <Slide eyebrow="Languages" icon="💬"><Headline>{story.languages}</Headline><LanguagesBar languages={data.languages} /></Slide>
     ) })
     list.push({ key: 'community', render: () => (
-      <Slide eyebrow="Community"><Headline>{story.community}</Headline><Sub>{story.tenure}</Sub>
+      <Slide eyebrow="Community" icon="🤝"><Headline>{story.community}</Headline><Sub>{story.tenure}</Sub>
         <div style={{ display: 'flex', gap: 28, justifyContent: 'center', marginTop: 20 }}>
           <BigNumber value={data.user.followers} label="followers" />
           <BigNumber value={data.memberYears} label="years" />
@@ -223,16 +232,16 @@ export function Wrapped({ data, onClose }) {
       </Slide>
     ) })
     if (story.spotlight) list.push({ key: 'spotlight', render: () => (
-      <Slide eyebrow="Favorite project"><Headline>{story.spotlight.text}</Headline><RepoHero owner={data.user.login} repoName={story.spotlight.repoName} /></Slide>
+      <Slide eyebrow="Favorite project" icon="💛"><Headline>{story.spotlight.text}</Headline><RepoHero owner={data.user.login} repoName={story.spotlight.repoName} /></Slide>
     ) })
     if (story.biggestCodebase) list.push({ key: 'biggest', render: () => (
-      <Slide eyebrow="Biggest codebase"><Headline>{story.biggestCodebase.text}</Headline><RepoHero owner={data.user.login} repoName={story.biggestCodebase.repoName} /></Slide>
+      <Slide eyebrow="Biggest codebase" icon="📦"><Headline>{story.biggestCodebase.text}</Headline><RepoHero owner={data.user.login} repoName={story.biggestCodebase.repoName} /></Slide>
     ) })
     if (story.mostUnderrated) list.push({ key: 'underrated', render: () => (
-      <Slide eyebrow="Most underrated"><Headline>{story.mostUnderrated.text}</Headline><RepoHero owner={data.user.login} repoName={story.mostUnderrated.repoName} /></Slide>
+      <Slide eyebrow="Most underrated" icon="💎"><Headline>{story.mostUnderrated.text}</Headline><RepoHero owner={data.user.login} repoName={story.mostUnderrated.repoName} /></Slide>
     ) })
     if (story.longestMaintained) list.push({ key: 'longest', render: () => (
-      <Slide eyebrow="Longest maintained"><Headline>{story.longestMaintained.text}</Headline><RepoHero owner={data.user.login} repoName={story.longestMaintained.repoName} /></Slide>
+      <Slide eyebrow="Longest maintained" icon="🌱"><Headline>{story.longestMaintained.text}</Headline><RepoHero owner={data.user.login} repoName={story.longestMaintained.repoName} /></Slide>
     ) })
     list.push({ key: 'end', render: () => (
       <EndSlide data={data} cardRef={cardRef} done={done} onDownload={downloadPng} onCopyLink={copyLink} onFinish={onClose} />
@@ -261,11 +270,37 @@ export function Wrapped({ data, onClose }) {
         const x = e.clientX / window.innerWidth
         if (x < 0.28) go(-1); else go(1)
       }}
-      style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'linear-gradient(160deg,#15100a 0%,#0a0705 100%)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 1200, background: '#0a0705', display: 'flex', flexDirection: 'column', cursor: 'pointer', overflow: 'hidden' }}
     >
-      <div style={{ display: 'flex', gap: 4, padding: '16px 16px 0' }} onClick={(e) => e.stopPropagation()}>
+      {/* ambient drifting glow — purely atmospheric, re-seeds gently per chapter */}
+      <motion.div
+        key={`glow-${idx}`}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      >
+        <motion.div
+          animate={{ x: ['-10%', '8%', '-6%', '-10%'], y: ['-8%', '6%', '10%', '-8%'] }}
+          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ position: 'absolute', top: '10%', left: '10%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,200,66,0.09), transparent 70%)', filter: 'blur(50px)' }}
+        />
+        <motion.div
+          animate={{ x: ['6%', '-8%', '4%', '6%'], y: ['6%', '-6%', '-10%', '6%'] }}
+          transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ position: 'absolute', bottom: '5%', right: '8%', width: '50%', height: '50%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(107,64,32,0.16), transparent 70%)', filter: 'blur(50px)' }}
+        />
+      </motion.div>
+
+      <div style={{ display: 'flex', gap: 4, padding: '16px 16px 0', position: 'relative', zIndex: 2 }} onClick={(e) => e.stopPropagation()}>
         {chapters.map((c, i) => (
-          <div key={c.key} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)' }} />
+          <div key={c.key} style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.18)', overflow: 'hidden' }}>
+            {i <= idx && (
+              <motion.div
+                initial={{ width: i === idx ? '0%' : '100%' }} animate={{ width: '100%' }}
+                transition={{ duration: i === idx ? 0.4 : 0 }}
+                style={{ height: '100%', background: '#fff', boxShadow: i === idx ? '0 0 8px rgba(255,255,255,0.6)' : 'none' }}
+              />
+            )}
+          </div>
         ))}
       </div>
 
@@ -278,7 +313,7 @@ export function Wrapped({ data, onClose }) {
         <XIcon size={15} color="#fff" />
       </motion.button>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2 }}>
         <AnimatePresence mode="wait">
           <React.Fragment key={chapters[idx].key}>{chapters[idx].render()}</React.Fragment>
         </AnimatePresence>

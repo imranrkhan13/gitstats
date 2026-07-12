@@ -80,8 +80,8 @@ export function RoastCard({ roast, login }) {
   return (
     <div>
       <div ref={cardRef}>
-        <TiltCard width="min(420px, 92vw)" aspectRatio="420/560" style={{ margin: '0 auto' }}>
-          <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', padding: '7% 8%', boxSizing: 'border-box', fontFamily: 'Inter,sans-serif' }}>
+        <TiltCard width="min(420px, 92vw)" style={{ margin: '0 auto' }}>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', padding: '28px 30px', boxSizing: 'border-box', fontFamily: 'Inter,sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', color: 'var(--text4)' }}>{BRAND.appName.toUpperCase()} ROAST</span>
               {!roast.aiGenerated && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text4)' }}>RULE-BASED</span>}
