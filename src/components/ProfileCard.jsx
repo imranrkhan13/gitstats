@@ -154,7 +154,7 @@ export function ProfileCard({ data, width = 'min(360px, 88vw)', cardRef }) {
             </motion.div>
 
             <motion.div variants={rise} style={{ fontSize: '0.48em', color: 'var(--text4)', marginTop: 8, display: 'flex', justifyContent: 'space-between' }}>
-              <span>{BRAND.appName} · gitstatus.netlify.app</span>
+              <span>{BRAND.appName} · gitstatus.techiesaie.com</span>
               <span>{BRAND.madeBy}</span>
             </motion.div>
           </motion.div>

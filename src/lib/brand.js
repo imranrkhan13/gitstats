@@ -4,7 +4,7 @@ export const BRAND = {
   madeBy: 'Imran',
   portfolio: 'imran-silk.vercel.app',
   portfolioUrl: 'https://imran-silk.vercel.app',
-  website: 'gitstatus.netlify.app',
-  websiteUrl: 'https://gitstatus.netlify.app',
+  website: 'gitstatus.techiesaie.com',
+  websiteUrl: 'https://gitstatus.techiesaie.com',
   year: new Date().getFullYear(),
 }

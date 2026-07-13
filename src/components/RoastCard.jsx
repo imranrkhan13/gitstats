@@ -110,7 +110,7 @@ export function RoastCard({ roast, login }) {
                 </FieldBlock>
                 <FieldBlock label="If this GitHub were a developer..." delay={0.26}>{roast.ifDeveloper}</FieldBlock>
 
-                <div style={{ marginTop: 'auto', fontSize: 10, color: 'var(--text4)', paddingTop: 8 }}>gitstatus.netlify.app</div>
+                <div style={{ marginTop: 'auto', fontSize: 10, color: 'var(--text4)', paddingTop: 8 }}>gitstatus.techiesaie.coms</div>
               </>
             )}
           </div>
