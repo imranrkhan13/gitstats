@@ -11,7 +11,14 @@ import {
   detectRepoType, calcScore, detectDevType, ageTier,
   influenceRatio, extractTopTopics, repoHealth
 } from './utils.js'
+const TOKEN = import.meta.env.VITE_GITHUB_TOKEN
 
+const headers = {
+  Accept: "application/vnd.github+json",
+  ...(TOKEN && {
+    Authorization: `Bearer ${TOKEN}`,
+  }),
+}
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function utcToday() { return new Date().toISOString().slice(0, 10) }
 function utcYesterday() { const d = new Date(); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10) }
@@ -47,9 +54,15 @@ export async function fetchGitHub(rawUsername) {
   const username = sanitizeUsername(rawUsername)
   if (!username) throw new Error('Enter a GitHub username')
   const [uRes, rRes, evRes] = await Promise.all([
-    fetch(`https://api.github.com/users/${username}`),
-    fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`),
-    fetch(`https://api.github.com/users/${username}/events/public?per_page=100`),
+    fetch(`https://api.github.com/users/${username}`, {
+      headers,
+    }),
+    fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`, {
+      headers,
+    }),
+    fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, {
+      headers,
+    }),
   ])
   if (!uRes.ok) {
     if (uRes.status === 404) throw new Error('User not found on GitHub')

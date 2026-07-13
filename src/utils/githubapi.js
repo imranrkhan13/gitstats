@@ -1,12 +1,18 @@
+console.log("githubapi.js loaded");
 const GITHUB_API_BASE = 'https://api.github.com'
 const TIMEOUT_MS = 15000
 
 function authHeaders() {
+    console.log("ENV:", import.meta.env)
+    console.log("TOKEN:", import.meta.env.VITE_GITHUB_TOKEN)
+
     const token = import.meta.env.VITE_GITHUB_TOKEN
 
     return {
-        Accept: 'application/vnd.github+json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        Accept: "application/vnd.github+json",
+        ...(token && {
+            Authorization: `Bearer ${token}`,
+        }),
     }
 }
 
@@ -62,7 +68,9 @@ export function parseGitHubInput(input) {
 }
 
 export async function fetchGitHubProfile(input) {
+    console.log("fetchGitHubProfile called", input)
     const parsed = parseGitHubInput(input)
+    
     if (!parsed) throw new Error('Invalid GitHub input. Use username or github.com/username/repo')
 
     const { username, repo } = parsed

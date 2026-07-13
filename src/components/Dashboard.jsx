@@ -302,21 +302,169 @@ Member since: ${u.created_at?.slice(0, 4)}`
 
 // ── README Badge copy ─────────────────────────────────────────────────────────
 function ReadmeBadge({ login, score }) {
-  const [copied, setCopied] = useState(false)
-  const badge = `[![GitStatus](https://img.shields.io/badge/GitStatus-${score}%2F100-${score >= 80 ? '22c55e' : score >= 60 ? 'f59e0b' : score >= 40 ? 'f97316' : 'ef4444'}?style=flat-square&logo=github)](${BRAND.websiteUrl}/?user=${login})`
-  const copy = async () => {
-    await navigator.clipboard.writeText(badge).catch(() => { })
-    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  const [copied, setCopied] = React.useState(false)
+
+  const color =
+    score >= 90
+      ? "brightgreen"
+      : score >= 75
+        ? "green"
+        : score >= 60
+          ? "yellow"
+          : score >= 40
+            ? "orange"
+            : "red"
+
+  const badgeUrl = `https://img.shields.io/badge/GitStatus-${score}%2F100-${color}?style=flat-square&logo=github`
+
+  const profileUrl = `${BRAND.websiteUrl}/?user=${login}`
+
+  const markdown = `[![GitStatus](${badgeUrl})](${profileUrl})`
+
+  const copyMarkdown = async () => {
+    try {
+      await navigator.clipboard.writeText(markdown)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { }
   }
+
+  const copyImage = async () => {
+    try {
+      await navigator.clipboard.writeText(badgeUrl)
+    } catch { }
+  }
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 9, padding: '10px 14px', marginTop: 12 }}>
-      <code style={{ flex: 1, fontSize: 10, color: 'var(--text3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>{badge}</code>
-      <button onClick={copy} style={{ flexShrink: 0, height: 28, padding: '0 10px', border: '1px solid var(--border2)', borderRadius: 7, background: copied ? 'rgba(34,197,94,0.1)' : 'var(--surface)', color: copied ? 'var(--green)' : 'var(--text3)', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'Inter,sans-serif', transition: 'all 0.2s' }}>
-        {copied ? <CheckIcon size={11} color="var(--green)" /> : <CopyIcon size={11} color="var(--text3)" />}
-        {copied ? 'Copied!' : 'Copy Badge'}
-      </button>
+    <div
+      style={{
+        marginTop: 18,
+        border: "1px solid var(--border)",
+        borderRadius: 12,
+        background: "var(--surface)",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+
+      <div
+        style={{
+          padding: "14px 18px",
+          borderBottom: "1px solid var(--border)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--text)",
+            }}
+          >
+            README Badge
+          </div>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--text3)",
+              marginTop: 3,
+            }}
+          >
+            Copy this badge into your GitHub README
+          </div>
+        </div>
+
+        <img
+          src={badgeUrl}
+          alt="badge"
+          style={{
+            height: 24,
+          }}
+        />
+      </div>
+
+      {/* Code */}
+
+      <div
+        style={{
+          padding: 16,
+        }}
+      >
+        <div
+          style={{
+            background: "#0d1117",
+            border: "1px solid #30363d",
+            borderRadius: 8,
+            padding: 14,
+            overflowX: "auto",
+            fontFamily: "monospace",
+            fontSize: 12,
+            color: "#c9d1d9",
+            lineHeight: 1.6,
+          }}
+        >
+          {markdown}
+        </div>
+
+        {/* Buttons */}
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            marginTop: 14,
+          }}
+        >
+          <button
+            onClick={copyMarkdown}
+            style={buttonStyle}
+          >
+            {copied ? "✓ Copied" : "📋 Copy Markdown"}
+          </button>
+
+          <button
+            onClick={copyImage}
+            style={buttonStyle}
+          >
+            🖼 Copy Badge URL
+          </button>
+
+          <a
+            href={profileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...buttonStyle,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            ↗ View Profile
+          </a>
+        </div>
+      </div>
     </div>
   )
+}
+
+const buttonStyle = {
+  height: 36,
+  padding: "0 14px",
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--bg)",
+  color: "var(--text)",
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: "pointer",
+  transition: "all .2s",
 }
 
 // ── Commit hour×day heatmap (real events) ─────────────────────────────────────
