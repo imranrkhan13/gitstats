@@ -94,7 +94,7 @@ export function Landing({ onLoad, initialError = '' }) {
     finally { setLoading(false) }
   }
 
-  const examples = ['torvalds', 'gaearon', 'sindresorhus', 'yyx990803', 'tj']
+  const examples = ['aazad1234', 'imranrkhan13', 'iamejaaz', 'yyx990803', 'tj']
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden' }}>
