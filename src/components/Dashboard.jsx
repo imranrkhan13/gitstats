@@ -296,163 +296,12 @@ Member since: ${u.created_at?.slice(0, 4)}`
           </button>
         </div>
       )}
+      
     </Card>
+    
   )
 }
 
-// ── README Badge copy ─────────────────────────────────────────────────────────
-function ReadmeBadge({ login, score }) {
-  const [copied, setCopied] = React.useState(false)
-
-  const color =
-    score >= 90
-      ? "brightgreen"
-      : score >= 75
-        ? "green"
-        : score >= 60
-          ? "yellow"
-          : score >= 40
-            ? "orange"
-            : "red"
-
-  const badgeUrl = `https://img.shields.io/badge/GitStatus-${score}%2F100-${color}?style=flat-square&logo=github`
-
-  const profileUrl = `${BRAND.websiteUrl}/?user=${login}`
-
-  const markdown = `[![GitStatus](${badgeUrl})](${profileUrl})`
-
-  const copyMarkdown = async () => {
-    try {
-      await navigator.clipboard.writeText(markdown)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch { }
-  }
-
-  const copyImage = async () => {
-    try {
-      await navigator.clipboard.writeText(badgeUrl)
-    } catch { }
-  }
-
-  return (
-    <div
-      style={{
-        marginTop: 18,
-        border: "1px solid var(--border)",
-        borderRadius: 12,
-        background: "var(--surface)",
-        overflow: "hidden",
-      }}
-    >
-      {/* Header */}
-
-      <div
-        style={{
-          padding: "14px 18px",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: "var(--text)",
-            }}
-          >
-            README Badge
-          </div>
-
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--text3)",
-              marginTop: 3,
-            }}
-          >
-            Copy this badge into your GitHub README
-          </div>
-        </div>
-
-        <img
-          src={badgeUrl}
-          alt="badge"
-          style={{
-            height: 24,
-          }}
-        />
-      </div>
-
-      {/* Code */}
-
-      <div
-        style={{
-          padding: 16,
-        }}
-      >
-        <div
-          style={{
-            background: "#0d1117",
-            border: "1px solid #30363d",
-            borderRadius: 8,
-            padding: 14,
-            overflowX: "auto",
-            fontFamily: "monospace",
-            fontSize: 12,
-            color: "#c9d1d9",
-            lineHeight: 1.6,
-          }}
-        >
-          {markdown}
-        </div>
-
-        {/* Buttons */}
-
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            marginTop: 14,
-          }}
-        >
-          <button
-            onClick={copyMarkdown}
-            style={buttonStyle}
-          >
-            {copied ? "✓ Copied" : "📋 Copy Markdown"}
-          </button>
-
-          <button
-            onClick={copyImage}
-            style={buttonStyle}
-          >
-            🖼 Copy Badge URL
-          </button>
-
-          <a
-            href={profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              ...buttonStyle,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ↗ View Profile
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const buttonStyle = {
   height: 36,
@@ -865,6 +714,73 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
     devType, githubAge, influence, topTopics,
     eventStats, activeDays, lastActive,
   } = data
+  const summary = {
+    contributions: eventStats?.totalCommits || 0,
+    repositories: nonForkCount,
+    stars: totalStars,
+    followers: user.followers,
+  }
+
+  const dna = [
+    {
+      icon: "🔥",
+      label: "Code Quality",
+      value: score,
+    },
+    {
+      icon: "⚡",
+      label: "Consistency",
+      value: Math.min(100, streak * 10),
+    },
+    {
+      icon: "🚀",
+      label: "Open Source",
+      value: Math.min(100, totalStars),
+    },
+    {
+      icon: "🤝",
+      label: "Community",
+      value: Math.min(100, user.followers * 5),
+    },
+  ]
+
+  const achievements = [
+    {
+      icon: "⭐",
+      title: "100 Stars",
+      unlocked: totalStars >= 100,
+    },
+    {
+      icon: "🚀",
+      title: "50 Repositories",
+      unlocked: nonForkCount >= 50,
+    },
+    {
+      icon: "🔥",
+      title: "7 Day Streak",
+      unlocked: streak >= 7,
+    },
+    {
+      icon: "👥",
+      title: "50 Followers",
+      unlocked: user.followers >= 50,
+    },
+  ]
+
+  const timeline = [
+    {
+      title: "Joined GitHub",
+      date: user.created_at,
+    },
+    {
+      title: `${nonForkCount} repositories created`,
+      date: recentlyActive?.[0]?.created,
+    },
+    {
+      title: `${totalStars} stars earned`,
+      date: recentlyActive?.[0]?.updated,
+    },
+  ]
 
   const initials = (user.name || user.login).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const sortedRepos = [...topByStars].sort((a, b) =>
@@ -935,7 +851,6 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
               {user.twitter_username && <a href={`https://twitter.com/${user.twitter_username}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#1da1f2', textDecoration: 'none' }}>@{user.twitter_username}</a>}
               <span style={{ fontSize: 12, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 5 }}><CalendarIcon size={12} color="var(--text4)" />Joined {fmtDate(user.created_at)}</span>
             </div>
-            <ReadmeBadge login={user.login} score={score} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -965,7 +880,156 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
           </div>
         </div>
       </Card>
+      <Card
+        style={{
+          marginBottom: 16,
+          padding: 22,
+        }}
+      >
 
+        <SectionLabel>
+          🧬 GitHub Profile Snapshot
+        </SectionLabel>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 18,
+            marginTop: 18,
+          }}
+        >
+
+          {/* Summary */}
+
+          <div>
+            <div className="stat-number">
+              {summary.contributions}
+            </div>
+
+            <div className="stat-label">
+              Contributions
+            </div>
+          </div>
+
+          <div>
+            <div className="stat-number">
+              {summary.repositories}
+            </div>
+
+            <div className="stat-label">
+              Public Repositories
+            </div>
+          </div>
+
+          <div>
+            <div className="stat-number">
+              {summary.stars}
+            </div>
+
+            <div className="stat-label">
+              Stars Earned
+            </div>
+          </div>
+
+          <div>
+            <div className="stat-number">
+              {summary.followers}
+            </div>
+
+            <div className="stat-label">
+              Followers
+            </div>
+          </div>
+
+        </div>
+
+        <hr
+          style={{
+            margin: "22px 0",
+            border: 0,
+            borderTop: "1px solid var(--border)"
+          }}
+        />
+
+        <SectionLabel>
+          Developer DNA
+        </SectionLabel>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 14,
+            marginTop: 16,
+          }}
+        >
+
+          {dna.map(item => (
+
+            <div
+              key={item.label}
+              style={{
+                padding: 14,
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                background: "var(--bg)"
+              }}
+            >
+
+              <div
+                style={{
+                  fontSize: 26,
+                  marginBottom: 10
+                }}
+              >
+                {item.icon}
+              </div>
+
+              <div
+                style={{
+                  fontWeight: 700
+                }}
+              >
+                {item.label}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  height: 7,
+                  background: "var(--bg2)",
+                  borderRadius: 20
+                }}
+              >
+
+                <div
+                  style={{
+                    width: `${item.value}%`,
+                    height: "100%",
+                    background: "var(--br)",
+                    borderRadius: 20
+                  }}
+                />
+
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  fontWeight: 700
+                }}
+              >
+                {item.value}%
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </Card>
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 10, marginBottom: 14 }}>
         {[

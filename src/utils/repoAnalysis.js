@@ -1,11 +1,27 @@
 import { callAI, parseStructuredResponse } from './aiClient'
 import { buildGitHubContext, parseGitHubInput } from './githubapi'
 import { buildResumeContext } from './resumeParser'
-
+import {
+  getDeveloperDNA,
+  getAchievements,
+  getTimeline,
+  getGithubSummary,
+} from "../utils/repoAnalysis"
 const GITHUB_API_BASE = 'https://api.github.com'
 const MAX_FILE_BYTES = 100 * 1024
 const MAX_CONTEXT_FILES = 8
 const SESSION_PREFIX = 'resumeiq.repoIndex.'
+const dna = getDeveloperDNA(profile, repos, events)
+
+const achievements = getAchievements(profile, repos)
+
+const timeline = getTimeline(profile, repos)
+
+const summary = getGithubSummary(
+  profile,
+  repos,
+  githubData.totalContributions || 0
+)
 
 const SKIP_DIRS = new Set([
   '.git',
@@ -85,6 +101,127 @@ async function githubFetch(url, options = {}) {
 
 function cleanRepoName(repo = '') {
   return repo.replace(/\.git$/, '').replace(/\/$/, '')
+}
+export function getDeveloperDNA(user, repos, events = []) {
+  const totalStars = repos.reduce((t, r) => t + r.stargazers_count, 0)
+  const totalForks = repos.reduce((t, r) => t + r.forks_count, 0)
+
+  const builder = Math.min(100, repos.length * 2)
+  const collaborator = Math.min(100, totalForks * 4)
+  const consistency = Math.min(100, events.length)
+  const impact = Math.min(100, totalStars * 2)
+
+  return [
+    {
+      icon: "🏗",
+      label: "Builder",
+      value: builder,
+    },
+    {
+      icon: "🤝",
+      label: "Collaborator",
+      value: collaborator,
+    },
+    {
+      icon: "🔥",
+      label: "Consistency",
+      value: consistency,
+    },
+    {
+      icon: "⭐",
+      label: "Impact",
+      value: impact,
+    },
+  ]
+}
+export function getAchievements(user, repos) {
+  const stars = repos.reduce((t, r) => t + r.stargazers_count, 0)
+
+  return [
+    {
+      icon: "🚀",
+      title: "First Repository",
+      unlocked: repos.length >= 1,
+    },
+    {
+      icon: "📦",
+      title: "10 Repositories",
+      unlocked: repos.length >= 10,
+    },
+    {
+      icon: "⭐",
+      title: "100 Stars",
+      unlocked: stars >= 100,
+    },
+    {
+      icon: "🔥",
+      title: "50 Commits",
+      unlocked: true,
+    },
+    {
+      icon: "🌍",
+      title: "Open Source",
+      unlocked: repos.some(r => !r.private),
+    },
+    {
+      icon: "💎",
+      title: "Top Developer",
+      unlocked: stars >= 250,
+    },
+  ]
+}
+export function getTimeline(user, repos) {
+  const timeline = []
+
+  timeline.push({
+    title: "Joined GitHub",
+    date: user.created_at,
+  })
+
+  if (repos.length) {
+    const sorted = [...repos].sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    )
+
+    timeline.push({
+      title: "First Repository",
+      date: sorted[0].created_at,
+    })
+  }
+
+  const stars = repos.reduce((t, r) => t + r.stargazers_count, 0)
+
+  if (stars > 0) {
+    timeline.push({
+      title: `${stars} Stars Earned`,
+      date: new Date().toISOString(),
+    })
+  }
+
+  timeline.push({
+    title: `${repos.length} Public Repositories`,
+    date: new Date().toISOString(),
+  })
+
+  return timeline
+} export function getGithubSummary(user, repos, contributions = 0) {
+
+  return {
+
+    contributions,
+
+    repositories: repos.length,
+
+    stars: repos.reduce((t, r) => t + r.stargazers_count, 0),
+
+    forks: repos.reduce((t, r) => t + r.forks_count, 0),
+
+    followers: user.followers,
+
+    following: user.following,
+
+  }
+
 }
 
 export function parseRepositoryInput(input) {
