@@ -27,6 +27,9 @@ import { RoastCard } from './RoastCard.jsx'
 import { buildHeuristicRoast } from '../lib/roastHeuristic.js'
 import { RepoShowcase } from './RepoShowcase.jsx'
 import { CommandPalette } from './CommandPalette.jsx'
+import { DeveloperDNA } from './DeveloperDNA.jsx'
+import { AchievementCabinet } from './AchievementCabinet.jsx'
+import { CareerTimeline } from './CareerTimeline.jsx'
 
 const ACT_COLORS = {
   commit: 'var(--br2)', pr: '#3b82f6', review: '#8b5cf6',
@@ -296,9 +299,9 @@ Member since: ${u.created_at?.slice(0, 4)}`
           </button>
         </div>
       )}
-      
+
     </Card>
-    
+
   )
 }
 
@@ -714,74 +717,6 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
     devType, githubAge, influence, topTopics,
     eventStats, activeDays, lastActive,
   } = data
-  const summary = {
-    contributions: eventStats?.totalCommits || 0,
-    repositories: nonForkCount,
-    stars: totalStars,
-    followers: user.followers,
-  }
-
-  const dna = [
-    {
-      icon: "🔥",
-      label: "Code Quality",
-      value: score,
-    },
-    {
-      icon: "⚡",
-      label: "Consistency",
-      value: Math.min(100, streak * 10),
-    },
-    {
-      icon: "🚀",
-      label: "Open Source",
-      value: Math.min(100, totalStars),
-    },
-    {
-      icon: "🤝",
-      label: "Community",
-      value: Math.min(100, user.followers * 5),
-    },
-  ]
-
-  const achievements = [
-    {
-      icon: "⭐",
-      title: "100 Stars",
-      unlocked: totalStars >= 100,
-    },
-    {
-      icon: "🚀",
-      title: "50 Repositories",
-      unlocked: nonForkCount >= 50,
-    },
-    {
-      icon: "🔥",
-      title: "7 Day Streak",
-      unlocked: streak >= 7,
-    },
-    {
-      icon: "👥",
-      title: "50 Followers",
-      unlocked: user.followers >= 50,
-    },
-  ]
-
-  const timeline = [
-    {
-      title: "Joined GitHub",
-      date: user.created_at,
-    },
-    {
-      title: `${nonForkCount} repositories created`,
-      date: recentlyActive?.[0]?.created,
-    },
-    {
-      title: `${totalStars} stars earned`,
-      date: recentlyActive?.[0]?.updated,
-    },
-  ]
-
   const initials = (user.name || user.login).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const sortedRepos = [...topByStars].sort((a, b) =>
     repoSort === 'stars' ? b.stars - a.stars : repoSort === 'forks' ? b.forks - a.forks :
@@ -880,156 +815,6 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
           </div>
         </div>
       </Card>
-      <Card
-        style={{
-          marginBottom: 16,
-          padding: 22,
-        }}
-      >
-
-        <SectionLabel>
-          🧬 GitHub Profile Snapshot
-        </SectionLabel>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-            gap: 18,
-            marginTop: 18,
-          }}
-        >
-
-          {/* Summary */}
-
-          <div>
-            <div className="stat-number">
-              {summary.contributions}
-            </div>
-
-            <div className="stat-label">
-              Contributions
-            </div>
-          </div>
-
-          <div>
-            <div className="stat-number">
-              {summary.repositories}
-            </div>
-
-            <div className="stat-label">
-              Public Repositories
-            </div>
-          </div>
-
-          <div>
-            <div className="stat-number">
-              {summary.stars}
-            </div>
-
-            <div className="stat-label">
-              Stars Earned
-            </div>
-          </div>
-
-          <div>
-            <div className="stat-number">
-              {summary.followers}
-            </div>
-
-            <div className="stat-label">
-              Followers
-            </div>
-          </div>
-
-        </div>
-
-        <hr
-          style={{
-            margin: "22px 0",
-            border: 0,
-            borderTop: "1px solid var(--border)"
-          }}
-        />
-
-        <SectionLabel>
-          Developer DNA
-        </SectionLabel>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-            gap: 14,
-            marginTop: 16,
-          }}
-        >
-
-          {dna.map(item => (
-
-            <div
-              key={item.label}
-              style={{
-                padding: 14,
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                background: "var(--bg)"
-              }}
-            >
-
-              <div
-                style={{
-                  fontSize: 26,
-                  marginBottom: 10
-                }}
-              >
-                {item.icon}
-              </div>
-
-              <div
-                style={{
-                  fontWeight: 700
-                }}
-              >
-                {item.label}
-              </div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  height: 7,
-                  background: "var(--bg2)",
-                  borderRadius: 20
-                }}
-              >
-
-                <div
-                  style={{
-                    width: `${item.value}%`,
-                    height: "100%",
-                    background: "var(--br)",
-                    borderRadius: 20
-                  }}
-                />
-
-              </div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  fontWeight: 700
-                }}
-              >
-                {item.value}%
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </Card>
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 10, marginBottom: 14 }}>
         {[
@@ -1052,6 +837,10 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
 
           {/* AI Panel */}
           <AIPanel data={data} />
+
+          <DeveloperDNA data={data} />
+          <AchievementCabinet data={data} />
+          <CareerTimeline data={data} />
 
           {devType && <DevIdentityCard devType={devType} githubAge={githubAge} influence={influence} eventStats={eventStats} followers={user.followers} following={user.following} memberMonths={memberMonths} archivedCount={archivedCount} activeRepoCount={activeRepoCount} />}
 
