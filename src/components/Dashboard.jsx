@@ -29,7 +29,7 @@ import { RepoShowcase } from './RepoShowcase.jsx'
 import { CommandPalette } from './CommandPalette.jsx'
 import { DeveloperDNA } from './Developerdna.jsx'
 import { AchievementCabinet } from './Achievementcabinet.jsx'
-import { CareerTimeline } from './Careertimeline.jsxs'
+import { CareerTimeline } from './Careertimeline.jsx'
 
 const ACT_COLORS = {
   commit: 'var(--br2)', pr: '#3b82f6', review: '#8b5cf6',
