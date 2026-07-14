@@ -27,9 +27,9 @@ import { RoastCard } from './RoastCard.jsx'
 import { buildHeuristicRoast } from '../lib/roastHeuristic.js'
 import { RepoShowcase } from './RepoShowcase.jsx'
 import { CommandPalette } from './CommandPalette.jsx'
-import { DeveloperDNA } from './DeveloperDNA.jsx'
-import { AchievementCabinet } from './AchievementCabinet.jsx'
-import { CareerTimeline } from './CareerTimeline.jsx'
+import { DeveloperDNA } from './Developerdna.jsx'
+import { AchievementCabinet } from './Achievementcabinet.jsx'
+import { CareerTimeline } from './Careertimeline.jsxs'
 
 const ACT_COLORS = {
   commit: 'var(--br2)', pr: '#3b82f6', review: '#8b5cf6',
