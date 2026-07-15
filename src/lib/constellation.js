@@ -1,10 +1,8 @@
-// constellation.js — "Code Constellation": each repo becomes a star, sized
-// by its real star count, colored by its real primary language, positioned
-// by a seeded pseudo-random layout (seed = hash of username, so it's
-// deterministic — the same profile always produces the same constellation,
-// but no two profiles look alike). Stars sharing a language get a faint
-// connecting line, so language clusters visually emerge on their own —
-// nobody manually places anything, it falls out of the real data.
+// constellation.js — Orbital Galaxy
+// Every repo becomes a planet revolving around the user's name (the sun).
+// Layout is fully deterministic: seed = hash(username), so the same profile
+// always produces the exact same orbits, speeds, and colors.
+
 import { hashString } from './utils.js'
 import { LANG_COLORS } from './constants.js'
 
@@ -18,37 +16,73 @@ function mulberry32(seed) {
   }
 }
 
+function fallbackColor(name) {
+  const hue = hashString(name) % 360
+  return `hsl(${hue}, 80%, 60%)`
+}
+
 export function buildConstellation(data) {
-  const repos = (data.topByStars || []).slice(0, 18)
+  const repos = (data.topByStars || data.repos || []).slice(0, 30)
+  if (!repos.length) {
+    return { planets: [], orbitRings: [], stats: {}, user: data.user }
+  }
+
   const seed = hashString(data.user.login)
   const rand = mulberry32(seed)
 
-  const stars = repos.map((r, i) => {
-    const angle = rand() * Math.PI * 2
-    const radius = 15 + rand() * 38 // spread from center, in % of viewbox
+  // Build year rings deterministically
+  const years = [...new Set(
+    repos.map(r => (r.created_at || r.year || '').toString().slice(0, 4)).filter(Boolean)
+  )].sort()
+
+  const planets = repos.map((r, i) => {
+    const year = (r.created_at || r.year || '').toString().slice(0, 4)
+    const yearIndex = years.indexOf(year)
+
+    // Orbit radius: year ring + deterministic scatter so same-year repos don't stack perfectly
+    const orbitRadius = 18 + (yearIndex >= 0 ? yearIndex : 0) * 12 + ((i * 7) % 3) * 3
+
+    // Language color with name-based fallback
+    const lang = r.language || r.lang || 'Unknown'
+    const color = LANG_COLORS[lang] || fallbackColor(r.name)
+
+    // Orbital speed: inner rings move faster
+    const speed = 0.2 + rand() * 0.4 + (1 / orbitRadius) * 1.5
+
+    // Planet radius by real stars (log-scaled so one mega-repo doesn't own the canvas)
+    const starCount = r.stargazers_count || r.stars || 0
+    const rSize = Math.max(1.2, Math.min(4.5, 1 + Math.log10(starCount + 1) * 1.2))
+
     return {
-      id: r.name,
-      x: 50 + Math.cos(angle) * radius * (0.5 + rand() * 0.5),
-      y: 50 + Math.sin(angle) * radius * (0.5 + rand() * 0.5),
-      r: Math.max(2.2, Math.min(9, Math.log10((r.stars || 0) + 1) * 3.4 + 2)),
-      color: LANG_COLORS[r.lang] || '#a08060',
-      lang: r.lang,
+      id: r.id || `${r.name}-${i}`,
       name: r.name,
-      stars: r.stars || 0,
-      delay: i * 0.05 + rand() * 0.1,
+      lang,
+      color,
+      stars: starCount,
+      forks: r.forks_count || r.forks || 0,
+      size: r.size,
+      description: r.description,
+      year,
+      url: r.html_url || r.url,
+      // Geometry
+      r: rSize,
+      orbitRadius,
+      baseAngle: (i / Math.max(repos.length, 1)) * Math.PI * 2 + rand() * 0.5,
+      speed,
+      // Visual extras
+      hasRing: starCount >= 5,
+      moonCount: Math.min(r.forks_count || r.forks || 0, 3),
     }
   })
 
-  const connections = []
-  for (let i = 0; i < stars.length; i++) {
-    for (let j = i + 1; j < stars.length; j++) {
-      if (stars[i].lang && stars[i].lang === stars[j].lang) {
-        connections.push({ from: stars[i], to: stars[j] })
-      }
-    }
+  // Extract unique orbit rings for drawing dashed paths behind planets
+  const orbitRings = [...new Set(planets.map(p => p.orbitRadius))].sort((a, b) => a - b)
+
+  const stats = {
+    count: planets.length,
+    totalStars: planets.reduce((s, p) => s + p.stars, 0),
+    totalForks: planets.reduce((s, p) => s + p.forks, 0),
   }
 
-  const topTwoColors = [...new Set(stars.map(s => s.color))].slice(0, 2)
-
-  return { stars, connections, bgColors: topTwoColors.length ? topTwoColors : ['#3d2010', '#1a0f06'] }
+  return { planets, orbitRings, stats, user: data.user }
 }

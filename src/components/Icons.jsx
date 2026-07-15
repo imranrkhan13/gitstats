@@ -2,6 +2,7 @@ import React from 'react'
 const V = ({ children, size = 16, fill = 'none', stroke = 'currentColor', sw = 2 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 )
+
 export const StarIcon = ({ size = 16, color = 'currentColor' }) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
 export const ForkIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><circle cx="18" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><path d="M6 9v4a2 2 0 002 2h8" /><circle cx="6" cy="18" r="3" /><line x1="6" y1="9" x2="6" y2="15" /></V>
 export const RepoIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></V>
@@ -23,6 +24,18 @@ export const BackIcon = ({ size = 16, color = 'currentColor' }) => <V size={size
 export const EyeIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></V>
 export const TrendIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></V>
 export const CopyIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></V>
+export const PlayIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <path d="M8 5v14l11-7z" />
+  </svg>
+)
+
+export const PauseIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <rect x="6" y="4" width="4" height="16" rx="1" />
+    <rect x="14" y="4" width="4" height="16" rx="1" />
+  </svg>
+)
 export const DownloadIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></V>
 export const IssueIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></V>
 export const MedalIcon = ({ size = 16, color = 'currentColor' }) => <V size={size} stroke={color}><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" /></V>
