@@ -1,10 +1,14 @@
+/* developerdna.module.css */
+
 .card {
     position: relative;
     margin-bottom: 14px;
-    padding: 26px;
+    padding: 28px;
     border-radius: 20px;
     border: 1.5px solid var(--border2);
-    background: linear-gradient(135deg, color-mix(in srgb, var(--surface) 78%, transparent) 0%, color-mix(in srgb, var(--bg2) 70%, transparent) 100%);
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--surface) 78%, transparent) 0%,
+            color-mix(in srgb, var(--bg2) 70%, transparent) 100%);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     box-shadow: var(--shadow), 0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
@@ -16,7 +20,9 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--br2) 16%, transparent) 0%, transparent 55%);
+    background: radial-gradient(circle at 15% -10%,
+            color-mix(in srgb, var(--br2) 16%, transparent) 0%,
+            transparent 55%);
     pointer-events: none;
 }
 
@@ -28,7 +34,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+.titleWrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .title {
@@ -40,9 +52,329 @@
     color: var(--text);
 }
 
+.infoBtn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.infoBtn:hover {
+    border-color: var(--br2);
+    color: var(--br2);
+    background: color-mix(in srgb, var(--br2) 8%, transparent);
+}
+
+.dnaBadge {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--br2) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--br2) 25%, transparent);
+    color: var(--br2);
+}
+
+/* ─── MODAL OVERLAY ───────────────────────────────────────────────────── */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 32px;
+    position: relative;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.modalTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+.modalSubtitle {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.5;
+    margin-bottom: 28px;
+}
+
+.closeBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.closeBtn:hover {
+    border-color: var(--br2);
+    color: var(--br2);
+    background: var(--bg);
+}
+
+/* ─── FORMULA SECTIONS ────────────────────────────────────────────────── */
+.section {
+    margin-bottom: 24px;
+}
+
+.sectionTitle {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+}
+
+.scoreHeader {
+    margin-bottom: 12px;
+}
+
+.scoreHeaderTitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.scoreIntro {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.scoreIntro strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.formulaList {
+    display: flex;
+    flex-direction: column;
+}
+
+.formulaItem {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border2);
+}
+
+.formulaItem:last-child {
+    border-bottom: none;
+}
+
+.formulaHead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.formulaDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.formulaName {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.formulaRange {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    margin-left: auto;
+}
+
+.formulaDesc {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.6;
+    padding-left: 20px;
+}
+
+.formulaCode {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--bg2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ─── FAQ SECTION ───────────────────────────────────────────────────────── */
+.faqList {
+    display: flex;
+    flex-direction: column;
+}
+
+.faqItem {
+    padding: 16px 0;
+    border-top: 1px solid var(--border2);
+}
+
+.faqItem:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.faqQuestion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.faqAnswer {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.6;
+    padding-left: 20px;
+}
+
+/* ─── MAIN LAYOUT ───────────────────────────────────────────────────────── */
+.main {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 640px) {
+    .main {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .modal {
+        padding: 24px;
+        border-radius: 16px;
+    }
+
+    .modalTitle {
+        font-size: 18px;
+    }
+}
+
+/* ─── RADAR + BARS + PERSONALITY (same as before) ─────────────────────── */
+.radarWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.radarSvg {
+    width: 180px;
+    height: 180px;
+    filter: drop-shadow(0 0 20px color-mix(in srgb, var(--br2) 15%, transparent));
+}
+
+.radarShape {
+    fill: color-mix(in srgb, var(--br2) 20%, transparent);
+    stroke: var(--br2);
+    stroke-width: 2;
+    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.radarGrid {
+    fill: none;
+    stroke: var(--border2);
+    stroke-width: 1;
+}
+
+.radarAxis {
+    stroke: var(--border2);
+    stroke-width: 1;
+}
+
+.radarPoint {
+    fill: var(--bg);
+    stroke: var(--br2);
+    stroke-width: 2;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.radarLabel {
+    font-size: 9px;
+    font-weight: 700;
+    fill: var(--text3);
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.totalScore {
+    text-align: center;
+}
+
+.scoreNumber {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.scoreLabel {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-top: 4px;
+}
+
 .traits {
     display: grid;
-    gap: 16px;
+    gap: 18px;
 }
 
 .traitRow {
@@ -52,13 +384,15 @@
 .traitHead {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 7px;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .traitIcon {
-    font-size: 15px;
-    line-height: 1;
+    width: 20px;
+    height: 20px;
+    color: var(--text3);
+    flex-shrink: 0;
 }
 
 .traitLabel {
@@ -78,7 +412,7 @@
 
 .track {
     position: relative;
-    height: 9px;
+    height: 8px;
     border-radius: 20px;
     background: var(--bg3, var(--bg2));
     overflow: hidden;
@@ -111,7 +445,7 @@
 }
 
 .fill_builder {
-    background: linear-gradient(90deg, var(--br2), var(--br3, var(--br2)));
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
 }
 
 .fill_mentor {
@@ -123,16 +457,59 @@
 }
 
 .fill_consistency {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    background: linear-gradient(90deg, #ef4444, #f87171);
 }
 
 .fill_quality {
     background: linear-gradient(90deg, #22c55e, #4ade80);
 }
 
+.personality {
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--bg2) 80%, transparent), color-mix(in srgb, var(--bg) 60%, transparent));
+    border: 1px solid var(--border2);
+    position: relative;
+    overflow: hidden;
+}
+
+.personality::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--br2), var(--br));
+}
+
+.personalityType {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--br2);
+    margin-bottom: 6px;
+}
+
+.personalityTitle {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.personalityDesc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text3);
+}
+
 .derivedFrom {
-    margin-top: 22px;
-    padding-top: 18px;
+    margin-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--border);
 }
 
@@ -174,23 +551,4 @@
     color: var(--green, #22c55e);
     font-weight: 800;
     font-size: 11px;
-}
-
-.sentence {
-    margin: 18px 0 0;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: var(--text2);
-    font-style: italic;
-}
-
-@media (max-width: 640px) {
-    .card {
-        padding: 20px;
-        border-radius: 16px;
-    }
-
-    .traits {
-        gap: 14px;
-    }
 }

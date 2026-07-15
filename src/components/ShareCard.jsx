@@ -9,7 +9,7 @@
 //  • Commit bar chart shows "real push events" label, handles empty array
 
 import React, { useState, useRef, useEffect } from 'react'
-import html2canvas from 'html2canvas'
+import { toCanvas } from "html-to-image"
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
@@ -27,9 +27,11 @@ import { MagneticButton } from './MotionUI.jsx'
 import { ProfileCard } from './ProfileCard.jsx'
 
 async function cardToCanvas(el) {
-  return html2canvas(el, {
-    scale: 2, useCORS: true, allowTaint: true,
-    backgroundColor: null, logging: false,
+  return await toCanvas(el, {
+    cacheBust: true,
+    pixelRatio: 3,
+    backgroundColor: null,
+    skipFonts: false,
   })
 }
 

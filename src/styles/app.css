@@ -654,7 +654,6 @@
 .repo-summary { display: flex; flex-direction: column; gap: 18px; }
 .rs-purpose .rs-name { font-size: 14px; font-weight: 650; color: var(--ink); margin-bottom: 5px; }
 .rs-purpose p { font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
-.rs-block {}
 .rs-facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .rs-facts > div { display: flex; flex-direction: column; gap: 2px; padding: 10px; background: var(--bg-sunken); border-radius: var(--r-md); min-width: 0; }
 .rs-facts span { font-size: 10px; color: var(--stone-soft); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }

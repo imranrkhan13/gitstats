@@ -28,8 +28,8 @@ import { buildHeuristicRoast } from '../lib/roastHeuristic.js'
 import { RepoShowcase } from './RepoShowcase.jsx'
 import { CommandPalette } from './CommandPalette.jsx'
 import { DeveloperDNA } from './Developerdna.jsx'
-import { AchievementCabinet } from './Achievementcabinet.jsx'
 import { CareerTimeline } from './Careertimeline.jsx'
+import { ShareCard } from './ShareCard.jsx'  
 
 const ACT_COLORS = {
   commit: 'var(--br2)', pr: '#3b82f6', review: '#8b5cf6',
@@ -733,6 +733,7 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
     { label: 'Tenure', value: Math.min(10, Math.round(memberYears * 1.4)), max: 10, color: 'var(--green)' },
     { label: 'Diversity', value: Math.min(8, Math.round(languages.length * 0.9)), max: 8, color: 'var(--amber)' },
   ]
+  const isMobile = window.innerWidth <= 768
 
   return (
     <div style={{ maxWidth: 980, margin: '0 auto', padding: '0 20px 80px' }}>
@@ -787,32 +788,161 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
               <span style={{ fontSize: 12, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 5 }}><CalendarIcon size={12} color="var(--text4)" />Joined {fmtDate(user.created_at)}</span>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Current Level</div>
-              <ScoreRing score={score} size={90} />
-              <button onClick={() => setShowInfo(true)} style={{ fontSize: 10, color: 'var(--text4)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter,sans-serif', display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                <InfoIcon size={10} color="var(--text4)" /> How it's calculated
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={onConstellation} style={{ height: 42, padding: '0 18px', border: '1.5px solid var(--border2)', background: 'var(--surface)', color: 'var(--text2)', borderRadius: 'var(--r)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Inter,sans-serif', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.color = '#8b5cf6' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}>
-                🌌 Your Constellation
-              </button>
-              <button onClick={onWrapped} style={{ height: 42, padding: '0 18px', border: '1.5px solid var(--border2)', background: 'var(--surface)', color: 'var(--text2)', borderRadius: 'var(--r)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Inter,sans-serif', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--br2)'; e.currentTarget.style.color = 'var(--br2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text2)' }}>
-                ✨ View Wrapped
-              </button>
-              <button onClick={onShare} style={{ height: 42, padding: '0 20px', border: 'none', background: 'var(--br)', color: '#fff', borderRadius: 'var(--r)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Inter,sans-serif', boxShadow: '0 2px 8px rgba(61,32,16,0.25)', transition: 'background 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--br2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--br)'}>
-                <ShareIcon size={14} color="#fff" /> Generate Share Card
-              </button>
-            </div>
-          </div>
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 14,
+    marginLeft: "auto",
+    flexShrink: 0,
+    width: "100%",
+    maxWidth: 560,
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 4,
+    }}
+  >
+    <div
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        color: "var(--text4)",
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+      }}
+    >
+      Current Level
+    </div>
+
+    <ScoreRing score={score} size={90} />
+
+    <button
+      onClick={() => setShowInfo(true)}
+      style={{
+        fontSize: 10,
+        color: "var(--text4)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        fontFamily: "Inter,sans-serif",
+      }}
+    >
+      <InfoIcon size={10} color="var(--text4)" />
+      How it's calculated
+    </button>
+  </div>
+
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: 10,
+      width: "100%",
+    }}
+  >
+    <button
+      onClick={onConstellation}
+      style={{
+        flex: "1 1 180px",
+        minWidth: 180,
+        height: 44,
+        border: "1.5px solid var(--border2)",
+        background: "var(--surface)",
+        color: "var(--text2)",
+        borderRadius: "var(--r)",
+        fontSize: 13.5,
+        fontWeight: 700,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 7,
+        fontFamily: "Inter,sans-serif",
+        transition: "all .2s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#8b5cf6";
+        e.currentTarget.style.color = "#8b5cf6";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border2)";
+        e.currentTarget.style.color = "var(--text2)";
+      }}
+    >
+      🌌 Your Constellation
+    </button>
+
+    <button
+      onClick={onWrapped}
+      style={{
+        flex: "1 1 180px",
+        minWidth: 180,
+        height: 44,
+        border: "1.5px solid var(--border2)",
+        background: "var(--surface)",
+        color: "var(--text2)",
+        borderRadius: "var(--r)",
+        fontSize: 13.5,
+        fontWeight: 700,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 7,
+        fontFamily: "Inter,sans-serif",
+        transition: "all .2s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--br2)";
+        e.currentTarget.style.color = "var(--br2)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border2)";
+        e.currentTarget.style.color = "var(--text2)";
+      }}
+    >
+      ✨ View Wrapped
+    </button>
+
+    <button
+      onClick={onShare}
+      style={{
+        flex: "2 1 280px",
+        minWidth: 240,
+        height: 44,
+        border: "none",
+        background: "var(--br)",
+        color: "#fff",
+        borderRadius: "var(--r)",
+        fontSize: 13.5,
+        fontWeight: 700,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 7,
+        fontFamily: "Inter,sans-serif",
+        boxShadow: "0 2px 8px rgba(61,32,16,0.25)",
+        transition: "background .2s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--br2)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "var(--br)")}
+    >
+      <ShareIcon size={14} color="#fff" />
+      Generate Share Card
+    </button>
+  </div>
+</div>
         </div>
       </Card>
       {/* Stat Cards */}
@@ -839,7 +969,7 @@ export function Dashboard({ data, onShare, onCompare, onWrapped, onConstellation
           <AIPanel data={data} />
 
           <DeveloperDNA data={data} />
-          <AchievementCabinet data={data} />
+
           <CareerTimeline data={data} />
 
           {devType && <DevIdentityCard devType={devType} githubAge={githubAge} influence={influence} eventStats={eventStats} followers={user.followers} following={user.following} memberMonths={memberMonths} archivedCount={archivedCount} activeRepoCount={activeRepoCount} />}

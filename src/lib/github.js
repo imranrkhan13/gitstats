@@ -1,11 +1,4 @@
 // github.js — GitStatus · 100% real data only
-// Nothing is estimated or seeded. If GitHub doesn't provide it, it's not returned.
-// What comes from where:
-//   /users/:login                  → profile, followers, following, gists, public repos
-//   /users/:login/repos?per_page=100 → stars, forks, watchers, languages, topics, size, pushed_at
-//   /users/:login/events/public?per_page=100 → streak, monthly commits (last ~90d only),
-//                                               PR/review/issue counts, most active day/hour
-
 import { LANG_COLORS } from './constants.js'
 import {
   detectRepoType, calcScore, detectDevType, ageTier,
@@ -15,11 +8,9 @@ const TOKEN = import.meta.env.VITE_GITHUB_TOKEN
 
 const headers = {
   Accept: "application/vnd.github+json",
-  ...(TOKEN && {
-    Authorization: `Bearer ${TOKEN}`,
-  }),
+  ...(TOKEN && { Authorization: `Bearer ${TOKEN}` }),
 }
-// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function utcToday() { return new Date().toISOString().slice(0, 10) }
 function utcYesterday() { const d = new Date(); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10) }
 function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000) }
@@ -29,14 +20,6 @@ function fmtMonth(isoDate) {
     ` '${String(d.getUTCFullYear()).slice(2)}`
 }
 
-// Fixes the exact bug reported: pasting "github.com/imranrkhan13" (or the
-// full https:// URL, or a trailing slash, or a leading @) was being sent to
-// the API as a literal username — GitHub then 404s on
-// /users/github.com/imranrkhan13 because that's not a valid login. This
-// strips all of that down to just the username, regardless of what the
-// person typed or pasted in. Lives here (not just in the search box) so
-// every caller — Landing's search, the `?user=` URL param, anything added
-// later — is protected the same way, once, in one place.
 export function sanitizeUsername(input) {
   if (!input) return ''
   return input
@@ -45,36 +28,100 @@ export function sanitizeUsername(input) {
     .replace(/^(www\.)?github\.com\//i, '')
     .replace(/^@/, '')
     .replace(/\/+$/, '')
-    .split(/[/?#]/)[0]
+    .split(/[\/?#]/)[0]
     .trim()
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-export async function fetchGitHub(rawUsername) {
-  const username = sanitizeUsername(rawUsername)
-  if (!username) throw new Error('Enter a GitHub username')
-  const [uRes, rRes, evRes] = await Promise.all([
-    fetch(`https://api.github.com/users/${username}`, {
-      headers,
-    }),
-    fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`, {
-      headers,
-    }),
-    fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, {
-      headers,
-    }),
-  ])
-  if (!uRes.ok) {
-    if (uRes.status === 404) throw new Error('User not found on GitHub')
-    if (uRes.status === 403) throw new Error('GitHub API rate limit — wait 60 seconds and try again')
-    throw new Error(`GitHub returned ${uRes.status}`)
+// ── GraphQL: real contribution data (yearly commits + daily calendar) ─────────
+async function fetchContributionsGraphQL(username) {
+  if (!TOKEN) return null
+
+  const now = new Date()
+  const yearStart = new Date(now.getFullYear(), 0, 1).toISOString()
+  const lastYearStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString()
+
+  const query = `
+    query($login: String!, $from: DateTime!, $to: DateTime!) {
+      user(login: $login) {
+        thisYear: contributionsCollection {
+          totalCommitContributions
+          contributionCalendar {
+            weeks { contributionDays { date contributionCount } }
+          }
+        }
+        lastYear: contributionsCollection(from: $from, to: $to) {
+          totalCommitContributions
+          contributionCalendar {
+            weeks { contributionDays { date contributionCount } }
+          }
+        }
+      }
+    }
+  `
+
+  try {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        variables: { login: username, from: lastYearStart, to: now.toISOString() }
+      })
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    if (json.errors) return null
+
+    const user = json.data?.user
+    if (!user) return null
+
+    const flatten = (collection) => {
+      const days = []
+      collection?.contributionCalendar?.weeks?.forEach(w => {
+        w?.contributionDays?.forEach(d => {
+          if (d?.date) days.push({ date: d.date, count: d.contributionCount || 0 })
+        })
+      })
+      return days.sort((a, b) => a.date.localeCompare(b.date))
+    }
+
+    return {
+      commitsThisYear: user.thisYear?.totalCommitContributions || 0,
+      totalCommits: user.lastYear?.totalCommitContributions || 0,
+      contributions: flatten(user.lastYear)
+    }
+  } catch {
+    return null
   }
-  const [user, repos, events] = await Promise.all([uRes.json(), rRes.json(), evRes.json()])
-  return processData(user, Array.isArray(repos) ? repos : [], Array.isArray(events) ? events : [])
 }
 
-// ── Streak (real from events) ─────────────────────────────────────────────────
-function calcStreak(events) {
+// ── Streak from daily contributions (GraphQL = truth) ───────────────────────
+function calcStreakFromContributions(contributions) {
+  if (!contributions?.length) return { streak: 0, longestStreak: 0, currentStreakCommits: 0, bestStreakCommits: 0 }
+
+  const counts = contributions.map(d => d.count || 0)
+
+  // Current streak from end
+  let streak = 0, currentStreakCommits = 0
+  for (let i = counts.length - 1; i >= 0; i--) {
+    if (counts[i] > 0) { streak++; currentStreakCommits += counts[i] }
+    else break
+  }
+
+  // Best streak
+  let longestStreak = 0, bestStreakCommits = 0
+  let curLen = 0, curCommits = 0
+  for (const c of counts) {
+    if (c > 0) { curLen++; curCommits += c }
+    else { curLen = 0; curCommits = 0 }
+    if (curLen > longestStreak) { longestStreak = curLen; bestStreakCommits = curCommits }
+  }
+
+  return { streak, longestStreak, currentStreakCommits, bestStreakCommits }
+}
+
+// ── Fallback streak from events ──────────────────────────────────────────────
+function calcStreakFromEvents(events) {
   const TYPES = new Set([
     'PushEvent', 'PullRequestEvent', 'CreateEvent', 'IssuesEvent',
     'IssueCommentEvent', 'PullRequestReviewEvent', 'PullRequestReviewCommentEvent', 'CommitCommentEvent',
@@ -108,6 +155,38 @@ function calcStreak(events) {
   })
 
   return { streak, longestStreak: Math.max(longest, streak), lastActive: sorted[0], activeDays: sorted }
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+export async function fetchGitHub(rawUsername) {
+  const username = sanitizeUsername(rawUsername)
+  if (!username) throw new Error('Enter a GitHub username')
+
+  const [uRes, rRes, evRes] = await Promise.all([
+    fetch(`https://api.github.com/users/${username}`, { headers }),
+    fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`, { headers }),
+    fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, { headers }),
+  ])
+
+  if (!uRes.ok) {
+    if (uRes.status === 404) throw new Error('User not found on GitHub')
+    if (uRes.status === 403) throw new Error('GitHub API rate limit — wait 60 seconds and try again')
+    throw new Error(`GitHub returned ${uRes.status}`)
+  }
+
+  const [user, repos, events] = await Promise.all([
+    uRes.json(), rRes.json(), evRes.json()
+  ])
+
+  // Fetch real yearly contribution data via GraphQL
+  const contribData = await fetchContributionsGraphQL(username)
+
+  return processData(
+    user,
+    Array.isArray(repos) ? repos : [],
+    Array.isArray(events) ? events : [],
+    contribData
+  )
 }
 
 // ── Event stats (real, ~90d window) ──────────────────────────────────────────
@@ -191,16 +270,28 @@ function buildMonthlyCommits(events) {
   const commitMap = {}
   events.forEach(e => {
     if (e.type === 'PushEvent' && e.created_at) {
-      const key = e.created_at.slice(0, 7)  // "YYYY-MM"
+      const key = e.created_at.slice(0, 7)
       commitMap[key] = (commitMap[key] || 0) + (e.payload?.size || 1)
     }
   })
   if (!Object.keys(commitMap).length) return []
-
-  // Return only months that have real data, sorted oldest→newest
   return Object.entries(commitMap)
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, commits]) => ({ month: fmtMonth(key + '-01'), commits, key }))
+}
+
+// ── Daily contributions fallback (from REST events) ─────────────────────────
+function buildDailyContributions(events) {
+  const dayMap = {}
+  events.forEach(e => {
+    if (e.type === 'PushEvent' && e.created_at) {
+      const date = e.created_at.slice(0, 10)
+      dayMap[date] = (dayMap[date] || 0) + (e.payload?.size || 1)
+    }
+  })
+  return Object.entries(dayMap)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, count]) => ({ date, count }))
 }
 
 // ── Language stats by repo size (bytes) ──────────────────────────────────────
@@ -242,7 +333,7 @@ function buildReposByYear(repos) {
 }
 
 // ── processData ───────────────────────────────────────────────────────────────
-export function processData(user, repos, events) {
+export function processData(user, repos, events, contribData = null) {
   const nonFork = repos.filter(r => !r.fork)
   let totalStars = 0, totalForks = 0, totalWatchers = 0
 
@@ -256,7 +347,6 @@ export function processData(user, repos, events) {
   const topLangByStars = buildStarsByLang(nonFork)
   const reposByYear = buildReposByYear(nonFork)
 
-  // Top repos by stars
   const topByStars = [...nonFork]
     .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0)).slice(0, 8)
     .map(r => ({
@@ -274,7 +364,6 @@ export function processData(user, repos, events) {
     }))
   topByStars.forEach(r => { r.health = repoHealth(r) })
 
-  // Recently pushed repos (real push time)
   const recentlyActive = [...nonFork]
     .sort((a, b) => new Date(b.pushed_at || 0) - new Date(a.pushed_at || 0)).slice(0, 8)
     .map(r => ({
@@ -287,18 +376,28 @@ export function processData(user, repos, events) {
     }))
 
   const spotlightRepo = topByStars[0] || null
-
-  // Real monthly commits only
   const monthlyCommits = buildMonthlyCommits(events)
-
-  // Real streak
-  const streakData = calcStreak(events)
-  const { streak, longestStreak } = streakData
-
-  // Real event stats
   const eventStats = calcEventStats(events)
 
-  // Activity feed
+  // Use GraphQL data when available (real yearly data)
+  const dailyContributions = contribData?.contributions || buildDailyContributions(events)
+  const totalCommits = contribData?.totalCommits || eventStats.totalCommits
+  const commitsThisYear = contribData?.commitsThisYear || eventStats.totalCommits
+
+  // Single source of truth for streaks — from GraphQL contributions when available
+  const streakFromContrib = calcStreakFromContributions(dailyContributions)
+  const streakFromEvents = calcStreakFromEvents(events)
+
+  const streak = contribData ? streakFromContrib.streak : streakFromEvents.streak
+  const longestStreak = contribData ? streakFromContrib.longestStreak : streakFromEvents.longestStreak
+  const lastActive = streakFromEvents.lastActive
+  const activeDays = streakFromEvents.activeDays
+
+  const commitStreakData = {
+    currentStreakCommits: streakFromContrib.currentStreakCommits,
+    bestStreakCommits: streakFromContrib.bestStreakCommits
+  }
+
   const activity = events.slice(0, 25).map(e => {
     const type =
       e.type === 'PushEvent' ? 'commit' :
@@ -386,15 +485,21 @@ export function processData(user, repos, events) {
     nonForkCount: nonFork.length, activeRepoCount, archivedCount,
     languages, topLangByStars, reposByYear,
     topByStars, recentlyActive, spotlightRepo,
-    monthlyCommits,          // REAL only — empty array if no push events
+    monthlyCommits,
     streak, longestStreak,
-    lastActive: streakData.lastActive,
-    activeDays: streakData.activeDays,   // real dates from events
+    lastActive,
+    activeDays,
     score, activity, repoTypes,
     memberYears, memberMonths, avgStars,
     stack, radarData,
     devType, githubAge, influence, topTopics,
     allRepos: nonFork,
-    eventStats,              // all real from events
+    eventStats,
+    contributions: dailyContributions,
+    totalCommits,
+    commitsThisYear,
+    totalPRs: eventStats.prCount,
+    totalIssues: eventStats.issueCount,
+    commitStreakData,
   }
 }
