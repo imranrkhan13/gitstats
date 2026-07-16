@@ -498,7 +498,7 @@ export function processData(user, repos, events, contribData = null) {
     contributions: dailyContributions,
     totalCommits,
     commitsThisYear,
-    totalPRs: eventStats.prCount,
+  totalPRs: eventStats.prCount,
     totalIssues: eventStats.issueCount,
     commitStreakData,
   }
