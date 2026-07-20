@@ -22,14 +22,12 @@ const CREAM = '#faf8f5'
 const ESPRESSO = '#3d2b1f'
 const MOCHA = '#6f4e37'
 
+// Minimal palette — one warm neutral family, just shifting depth/tint per card
+// instead of cycling through unrelated hues (brown/green/blue/pink). Calmer, more premium.
 const VIBES = [
   { bg: 'linear-gradient(165deg, #faf8f5 0%, #f5efe6 45%, #e8dfd1 100%)', accent: '#3d2b1f', glow: 'rgba(61,43,31,0.14)', text: '#3d2b1f', orb: 'rgba(61,43,31,0.06)' },
   { bg: 'linear-gradient(165deg, #f5efe6 0%, #ebe0d1 45%, #dccbb8 100%)', accent: '#6f4e37', glow: 'rgba(111,78,55,0.14)', text: '#4a3428', orb: 'rgba(111,78,55,0.08)' },
-  { bg: 'linear-gradient(165deg, #fff8f0 0%, #f5e6d3 45%, #e8d5c4 100%)', accent: '#c17f59', glow: 'rgba(193,127,89,0.14)', text: '#5c3a21', orb: 'rgba(193,127,89,0.08)' },
-  { bg: 'linear-gradient(165deg, #f4f7f2 0%, #e8ebe5 45%, #d9dfd3 100%)', accent: '#8a9a7b', glow: 'rgba(138,154,123,0.14)', text: '#2f3a28', orb: 'rgba(138,154,123,0.08)' },
-  { bg: 'linear-gradient(165deg, #f0f3f5 0%, #e2e8ec 45%, #d1d9e0 100%)', accent: '#5c6b73', glow: 'rgba(92,107,115,0.14)', text: '#2c3a42', orb: 'rgba(92,107,115,0.08)' },
-  { bg: 'linear-gradient(165deg, #faf3f5 0%, #f0e2e6 45%, #e5d1d8 100%)', accent: '#b5838d', glow: 'rgba(181,131,141,0.14)', text: '#4a2f35', orb: 'rgba(181,131,141,0.08)' },
-  { bg: 'linear-gradient(165deg, #faf6f0 0%, #f0e8d8 45%, #e5d9c4 100%)', accent: '#d4a373', glow: 'rgba(212,163,115,0.14)', text: '#4a3a28', orb: 'rgba(212,163,115,0.08)' },
+  { bg: 'linear-gradient(165deg, #fff8f0 0%, #f5e6d3 45%, #e8d5c4 100%)', accent: '#8a5a3b', glow: 'rgba(138,90,59,0.14)', text: '#4a3020', orb: 'rgba(138,90,59,0.08)' },
 ]
 
 function vibeForUser(login) {
@@ -104,6 +102,12 @@ const MEME_POOL = [
   "Andy Reid's playbook = your node_modules. Thick. Complex. Necessary evil.",
   "The Immaculate Reception = your git reflog. Miraculous recovery.",
   "Beast Mode = your coding mode after 4 Red Bulls. Skittles optional.",
+  "You closed 40 issues this year. Your inbox has 4,000 unread. Priorities.",
+  "You have 12 repos named 'test' or 'temp'. None of them are temporary.",
+  "Your README says 'coming soon.' It has said that since March.",
+  "You've fixed the same bug three times in three different branches. Deja vu, but expensive.",
+  "'Just a quick refactor' turned into 47 files changed. Classic developer NDA with reality.",
+  "You wrote a commit message that just says 'fix'. Future you will not thank present you.",
 ]
 
 function getMemesForUser(login, count) {
@@ -149,11 +153,11 @@ function tweetUrl(text, url) {
 
 function scoreTier(score) {
   if (score == null) return null
-  if (score >= 90) return 'Top 1%'
-  if (score >= 75) return 'Top 10%'
-  if (score >= 55) return 'Top 25%'
-  if (score >= 30) return 'Top 50%'
-  return 'Just Getting Started'
+  if (score >= 90) return 'Top 1% — basically a founder'
+  if (score >= 75) return 'Top 10% — recruiters should be scared'
+  if (score >= 55) return 'Top 25% — solidly employable'
+  if (score >= 30) return 'Top 50% — coin flip with the average dev'
+  return 'Just Getting Started (we all were)'
 }
 
 function getAward(data) {
@@ -161,16 +165,16 @@ function getAward(data) {
   const weekendPct = es.weekendPct
   const hour = es.mostActiveHour
   const day = es.mostActiveDay
-  if (data.longestStreak >= 100) return { icon: 'activity', title: 'The Unstoppable', roast: `${data.longestStreak} days without missing a commit. Do you sleep?` }
-  if (hour === 'Late Night') return { icon: 'eye', title: 'Night Owl', roast: `The moon has seen more of your code than your coworkers.` }
-  if (weekendPct != null && weekendPct >= 45) return { icon: 'zap', title: 'Weekend Warrior', roast: `${weekendPct}% weekend activity. "Rest" is just a folder you haven't opened.` }
-  if (es.developerStyle === 'Collaborator') return { icon: 'eye', title: 'The Reviewer', roast: `More PR reviews than pushes. You've read more of other people's code than your own.` }
-  if ((data.user?.followers || 0) > (data.user?.following || 1) * 3 && (data.user?.followers || 0) > 20) return { icon: 'trending', title: 'Quietly Popular', roast: `More followers than following. Main character energy.` }
-  if (data.longestStreak >= 30) return { icon: 'flame', title: 'Certified Grinder', roast: `${data.longestStreak} straight days. Mildly concerning — but impressive.` }
-  if ((data.archivedCount || 0) > (data.activeRepoCount || 1)) return { icon: 'layers', title: 'Graveyard Keeper', roast: `More archived repos than active ones. Museum of good intentions.` }
-  if (data.languages?.length >= 8) return { icon: 'users', title: 'The Polyglot', roast: `${data.languages.length} languages. Commitment issues, but for code.` }
-  if (day) return { icon: 'calendar', title: `${day} Committer`, roast: `${day}s are your power day. Everyone else is doing this on Monday.` }
-  return { icon: 'wrench', title: 'The Builder', roast: `Steady, consistent, shipping quietly. The backbone nobody thanks enough.` }
+  if (data.longestStreak >= 100) return { icon: 'activity', title: 'The Unstoppable', roast: `${data.longestStreak} days without missing a commit — that's longer than most gym memberships get used. Do you sleep?` }
+  if (hour === 'Late Night') return { icon: 'eye', title: 'Night Owl', roast: `Most of your commits land after dark. The moon has reviewed more of your code than your coworkers have.` }
+  if (weekendPct != null && weekendPct >= 45) return { icon: 'zap', title: 'Weekend Warrior', roast: `${weekendPct}% of your activity happens on weekends. "Rest" is just a folder you haven't opened yet.` }
+  if (es.developerStyle === 'Collaborator') return { icon: 'eye', title: 'The Reviewer', roast: `You've left more PR reviews than pushes this year. You've read more of other people's code than your own — respectfully unhinged.` }
+  if ((data.user?.followers || 0) > (data.user?.following || 1) * 3 && (data.user?.followers || 0) > 20) return { icon: 'trending', title: 'Quietly Popular', roast: `You follow almost no one, yet people keep following you. Main character energy, side character follow count.` }
+  if (data.longestStreak >= 30) return { icon: 'flame', title: 'Certified Grinder', roast: `${data.longestStreak} straight days of commits. Mildly concerning, deeply impressive, please drink water.` }
+  if ((data.archivedCount || 0) > (data.activeRepoCount || 1)) return { icon: 'layers', title: 'Graveyard Keeper', roast: `More archived repos than active ones — a private museum of good intentions and abandoned READMEs.` }
+  if (data.languages?.length >= 8) return { icon: 'users', title: 'The Polyglot', roast: `${data.languages.length} languages in your stack this year. Commitment issues, but for programming languages specifically.` }
+  if (day) return { icon: 'calendar', title: `${day} Committer`, roast: `${day}s are when you actually ship. Everyone else is stuck in a standup that could've been a Slack message.` }
+  return { icon: 'wrench', title: 'The Builder', roast: `Steady, consistent, shipping quietly all year. The backbone nobody thanks enough — until the demo goes well.` }
 }
 
 // ── Inline Icons (stroke, no fill) ──
@@ -400,61 +404,73 @@ function WrappedCard({ data, cardRef }) {
       <Orb color={vibe.orb} style={{ width: 260, height: 260, top: -80, right: -80, opacity: 0.5 }} />
       <Orb color={vibe.orb} style={{ width: 200, height: 200, bottom: -60, left: -60, opacity: 0.35 }} />
       <div style={{ height: 4, width: '100%', background: vibe.accent, opacity: 0.8 }} />
-      <div style={{ position: 'absolute', top: 18, right: -36, transform: 'rotate(38deg)', background: vibe.accent, color: '#fff', fontWeight: 800, fontSize: 10, padding: '5px 40px', letterSpacing: '0.06em', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>{tier || `${BRAND.appName} PICK`}</div>
-      <div style={{ position: 'relative', zIndex: 1, padding: '24px 22px 22px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', color: MOCHA, textTransform: 'uppercase' }}>{BRAND.appName?.toUpperCase()} WRAPPED · {year}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
-          {data.user?.avatar_url && <img src={data.user.avatar_url} crossOrigin="anonymous" style={{ width: 40, height: 40, borderRadius: '50%', border: `2.5px solid ${vibe.accent}`, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />}
-          <div style={{ color: ESPRESSO, fontSize: 13, fontWeight: 800, letterSpacing: '-0.01em' }}>@{data.user?.login}</div>
+      {tier && (
+        <div style={{ position: 'absolute', top: 20, right: -34, transform: 'rotate(38deg)', background: vibe.accent, color: '#fff', fontWeight: 800, fontSize: 9.5, padding: '5px 40px', letterSpacing: '0.04em', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', whiteSpace: 'nowrap' }}>{tier.split('—')[0].trim()}</div>
+      )}
+      <div style={{ position: 'relative', zIndex: 1, padding: '22px 20px 20px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Header: identity */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {data.user?.avatar_url && <img src={data.user.avatar_url} crossOrigin="anonymous" style={{ width: 38, height: 38, borderRadius: '50%', border: `2px solid ${vibe.accent}`, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />}
+          <div>
+            <div style={{ color: ESPRESSO, fontSize: 13, fontWeight: 800, letterSpacing: '-0.01em' }}>@{data.user?.login}</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.14em', color: MOCHA, textTransform: 'uppercase', marginTop: 1 }}>{BRAND.appName?.toUpperCase()} WRAPPED · {year}</div>
+          </div>
         </div>
-        <GlassSurface style={{ marginTop: 16, transform: 'rotate(-0.5deg)', padding: '18px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.7)' }}>
-              <AwardIcon name={award.icon} color={vibe.accent} size={18} />
+
+        {/* Award: the headline moment */}
+        <GlassSurface style={{ marginTop: 14, transform: 'rotate(-0.4deg)', padding: '16px 15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.7)', flexShrink: 0 }}>
+              <AwardIcon name={award.icon} color={vibe.accent} size={16} />
             </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: ESPRESSO, lineHeight: 1.12, letterSpacing: '-0.02em' }}>{award.title}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: ESPRESSO, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{award.title}</div>
           </div>
-          <div style={{ fontSize: 13, color: MOCHA, lineHeight: 1.5, fontWeight: 500 }}>{award.roast}</div>
+          <div style={{ fontSize: 12.5, color: MOCHA, lineHeight: 1.48, fontWeight: 500 }}>{award.roast}</div>
         </GlassSurface>
-        <div style={{ marginTop: 14, position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <GlassSurface style={{ flex: 1.15, transform: 'rotate(0.5deg)', padding: '14px 12px' }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: vibe.accent, letterSpacing: '-0.02em' }}>{(data.totalCommits || data.commitsThisYear || 0).toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: MOCHA, marginTop: 3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>commits tracked</div>
-            </GlassSurface>
-            <GlassSurface style={{ flex: 1, transform: 'rotate(-0.5deg)', padding: '14px 12px' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: ESPRESSO }}>{data.longestStreak || 0}d</div>
-              <div style={{ fontSize: 10, color: MOCHA, marginTop: 3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>best streak</div>
-            </GlassSurface>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <GlassSurface style={{ flex: 1, padding: '12px 12px' }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: ESPRESSO }}>{(data.totalStars || 0).toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>stars earned</div>
-            </GlassSurface>
-            <GlassSurface style={{ flex: 1, padding: '12px 12px' }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: ESPRESSO }}>{(data.user?.followers || 0).toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>followers</div>
-            </GlassSurface>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+
+        {/* Hero number: the one stat that matters most */}
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <div style={{ fontSize: 46, fontWeight: 800, color: vibe.accent, letterSpacing: '-0.03em', lineHeight: 1 }}>{(data.totalCommits || data.commitsThisYear || 0).toLocaleString()}</div>
+          <div style={{ fontSize: 10.5, color: MOCHA, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>commits shipped this year</div>
+        </div>
+
+        {/* Supporting stats: tidy 3-up row instead of a crowded stack */}
+        <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
+          <GlassSurface style={{ flex: 1, padding: '10px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: ESPRESSO }}>{data.longestStreak || 0}d</div>
+            <div style={{ fontSize: 9, color: MOCHA, marginTop: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>best streak</div>
+          </GlassSurface>
+          <GlassSurface style={{ flex: 1, padding: '10px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: ESPRESSO }}>{(data.totalStars || 0).toLocaleString()}</div>
+            <div style={{ fontSize: 9, color: MOCHA, marginTop: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>stars earned</div>
+          </GlassSurface>
+          <GlassSurface style={{ flex: 1, padding: '10px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: ESPRESSO }}>{(data.user?.followers || 0).toLocaleString()}</div>
+            <div style={{ fontSize: 9, color: MOCHA, marginTop: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>followers</div>
+          </GlassSurface>
+        </div>
+
+        {/* Rhythm + language: only render if we actually have the data */}
+        {(data.eventStats?.dayActivity || topLang) && (
+          <div style={{ display: 'flex', gap: 7, marginTop: 7, flex: 1 }}>
             {data.eventStats?.dayActivity && (
-              <GlassSurface style={{ flex: 1, padding: '12px 12px' }}>
-                <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>weekly rhythm</div>
+              <GlassSurface style={{ flex: 1, padding: '11px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontSize: 9, color: MOCHA, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>weekly rhythm</div>
                 <MiniWeekChart dayActivity={data.eventStats.dayActivity} color={vibe.accent} />
               </GlassSurface>
             )}
             {topLang && (
-              <GlassSurface style={{ flex: 1, padding: '12px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: topLang.color || vibe.accent, display: 'inline-block', boxShadow: `0 0 0 2px ${(topLang.color || vibe.accent)}30` }} />
-                  <span style={{ fontSize: 13, color: ESPRESSO, fontWeight: 700 }}>{topLang.name}</span>
+              <GlassSurface style={{ flex: 1, padding: '11px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: topLang.color || vibe.accent, display: 'inline-block', boxShadow: `0 0 0 2px ${(topLang.color || vibe.accent)}30` }} />
+                  <span style={{ fontSize: 12, color: ESPRESSO, fontWeight: 700 }}>{topLang.name}</span>
                 </div>
-                <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{topLang.pct}% of your code</div>
+                <div style={{ fontSize: 9, color: MOCHA, fontWeight: 700, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{topLang.pct}% of your code</div>
               </GlassSurface>
             )}
           </div>
-        </div>
+        )}
+
         <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, letterSpacing: '0.04em' }}>{(BRAND.websiteUrl || '').replace(/^https?:\/\//, '')}</div>
           <div style={{ fontSize: 10, color: MOCHA, fontWeight: 700, letterSpacing: '0.04em' }}>#{BRAND.appName}Wrapped</div>
@@ -599,7 +615,7 @@ export function Wrapped({ data, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <Badge color={VIBES[v % VIBES.length].accent}>{data.score >= 75 ? 'Legendary' : data.score >= 55 ? 'Epic' : data.score >= 30 ? 'Rare' : 'Common'}</Badge>
             </div>
-            <CardHeadline>You are{''}{identity.title}.</CardHeadline>
+            <CardHeadline>You are {identity.title}.</CardHeadline>
             <CardSub style={{ marginTop: 6 }}>{identity.why}</CardSub>
           </div>
           <MiniBars color={VIBES[v % VIBES.length].accent} items={[
@@ -687,8 +703,7 @@ export function Wrapped({ data, onClose }) {
                 <MiniGauge value={data.streakConsistency || 70} color={VIBES[cv % VIBES.length].accent} size={40} label="Consistency" />
               </div>
               <CardHeadline><AnimatedNumber value={data.longestStreak} /> day{data.longestStreak === 1 ? '' : 's'}</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>Your longest run of back-to-back active days{data.streak > 0 ? `
-Currently on a ${data.streak}-day streak` : ''}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>Your longest run of back-to-back active days{data.streak > 0 ? ` — and you're currently on a ${data.streak}-day streak` : ''}</CardSub>
             </div>
             {data.streakHeatmap && (
               <div>
@@ -751,7 +766,7 @@ Currently on a ${data.streak}-day streak` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[v % VIBES.length].accent}>{I.target}</CardIcon>
               <CardHeadline>{story.focusArea}</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{data.focusAreaPct ? `${data.focusAreaPct}% of your commits this year` : 'Your primary domain of expertise'}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{data.focusAreaPct ? `${data.focusAreaPct}% of your commits this year` : 'Where your commits actually go when no one is watching'}</CardSub>
             </div>
             {data.focusAreas && (
               <GlassSurface delay={0.15}>
@@ -781,7 +796,7 @@ Currently on a ${data.streak}-day streak` : ''}</CardSub>
           <div>
             <CardIcon color={VIBES[v % VIBES.length].accent}>{I.code}</CardIcon>
             <CardHeadline>{story.languages}</CardHeadline>
-            <CardSub style={{ marginTop: 6 }}>{data.languages?.length ? `${data.languages.length} languages in your stack` : 'Your coding vocabulary'}</CardSub>
+            <CardSub style={{ marginTop: 6 }}>{data.languages?.length ? `${data.languages.length} languages in your stack` : 'Your coding vocabulary — impressive at parties, mostly'}</CardSub>
           </div>
           {data.languages?.length > 0 && (
             <GlassSurface delay={0.15}>
@@ -818,7 +833,7 @@ Currently on a ${data.streak}-day streak` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[cv % VIBES.length].accent}>{I.scale}</CardIcon>
               <CardHeadline>What you lean on</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{data.specialistScore != null ? `Specialist score: ${data.specialistScore}/100` : 'Your engineering archetype breakdown'}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{data.specialistScore != null ? `Specialist score: ${data.specialistScore}/100` : 'What you lean on when the deadline is real'}</CardSub>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               {data.radarData.map((r, i) => (
@@ -847,8 +862,7 @@ Currently on a ${data.streak}-day streak` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[cv % VIBES.length].accent}>{I.gitMerge}</CardIcon>
               <CardHeadline>{(data.mergedPRs || 0).toLocaleString()} merged</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>out of {(data.totalPRs || 0).toLocaleString()} total PRs{data.prMergeRate ? `
-${data.prMergeRate}% merge rate` : ''}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>out of {(data.totalPRs || 0).toLocaleString()} total PRs{data.prMergeRate ? `, a ${data.prMergeRate}% merge rate` : ''}</CardSub>
             </div>
             {data.prMergeRate != null && (
               <GlassSurface delay={0.15}>
@@ -888,8 +902,7 @@ ${data.prMergeRate}% merge rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[cv % VIBES.length].accent}>{I.bug}</CardIcon>
               <CardHeadline>{(data.closedIssues || 0).toLocaleString()} closed</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{(data.totalIssues || 0).toLocaleString()} total issues{data.issueCloseRate ? `
-${data.issueCloseRate}% close rate` : ''}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{(data.totalIssues || 0).toLocaleString()} total issues{data.issueCloseRate ? `, a ${data.issueCloseRate}% close rate` : ''}</CardSub>
             </div>
             {data.issueCloseRate != null && (
               <GlassSurface delay={0.15}>
@@ -923,8 +936,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[cv % VIBES.length].accent}>{I.eye}</CardIcon>
               <CardHeadline>{(data.reviewsGiven || 0).toLocaleString()} reviews</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{(data.reviewComments || 0).toLocaleString()} review comments
-                {(data.avgReviewTime || 0).toLocaleString()}h avg review time</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{(data.reviewComments || 0).toLocaleString()} review comments, {(data.avgReviewTime || 0).toLocaleString()}h avg review time</CardSub>
             </div>
             {data.reviewApprovalRate != null && (
               <GlassSurface delay={0.15}>
@@ -957,8 +969,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[v % VIBES.length].accent}>{I.zap}</CardIcon>
               <CardHeadline>{(data.commitsPerWeek || 0).toLocaleString()} / week</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{(data.commitsPerDay || 0).toLocaleString()} commits per day on average
-                {(data.linesAdded || 0).toLocaleString()} lines added, {(data.linesDeleted || 0).toLocaleString()} deleted</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{(data.commitsPerDay || 0).toLocaleString()} commits per day on average — {(data.linesAdded || 0).toLocaleString()} lines added, {(data.linesDeleted || 0).toLocaleString()} deleted</CardSub>
             </div>
             {data.commitVelocityTrend && (
               <div>
@@ -987,8 +998,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[cv % VIBES.length].accent}>{I.folder}</CardIcon>
               <CardHeadline>{(data.publicRepos || 0).toLocaleString()} public</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{(data.totalRepos || 0).toLocaleString()} total repos
-                {(data.forkedRepos || 0).toLocaleString()} forks, {(data.originalRepos || 0).toLocaleString()} original</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{(data.totalRepos || 0).toLocaleString()} total repos — {(data.forkedRepos || 0).toLocaleString()} forks, {(data.originalRepos || 0).toLocaleString()} original</CardSub>
             </div>
             {data.repoPrivacyRatio != null && (
               <GlassSurface delay={0.15}>
@@ -1022,8 +1032,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[v % VIBES.length].accent}>{I.users}</CardIcon>
               <CardHeadline>{(data.collaborators || 0).toLocaleString()} collaborators</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{(data.contributors || 0).toLocaleString()} unique contributors across your repos
-                {(data.organizations || 0).toLocaleString()} orgs</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{(data.contributors || 0).toLocaleString()} unique contributors across your repos, {(data.organizations || 0).toLocaleString()} orgs</CardSub>
             </div>
             {data.topCollaborators && (
               <GlassSurface delay={0.15}>
@@ -1059,8 +1068,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             <div>
               <CardIcon color={VIBES[v % VIBES.length].accent}>{I.clock}</CardIcon>
               <CardHeadline>{data.mostActiveHour || 'All Hours'}</CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{data.mostActiveDay ? `${data.mostActiveDay} is your power day` : 'Every day is a power day'}
-                {(data.nightCommits || 0).toLocaleString()} late-night commits</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{data.mostActiveDay ? `${data.mostActiveDay} is your power day` : 'Every day is a power day'}, with {(data.nightCommits || 0).toLocaleString()} late-night commits</CardSub>
             </div>
             {data.hourlyDistribution && (
               <div>
@@ -1092,7 +1100,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
                 {data.eventStats.mostActiveDay ? `${data.eventStats.mostActiveDay}s` : 'Every day'}
                 {data.eventStats.mostActiveHour ? `, ${data.eventStats.mostActiveHour.toLowerCase()}` : ''}
               </CardHeadline>
-              <CardSub style={{ marginTop: 6 }}>{data.eventStats.weekendPct != null ? `${100 - data.eventStats.weekendPct}% weekday · ${data.eventStats.weekendPct}% weekend` : 'is when you tend to ship'}</CardSub>
+              <CardSub style={{ marginTop: 6 }}>{data.eventStats.weekendPct != null ? `${100 - data.eventStats.weekendPct}% weekday · ${data.eventStats.weekendPct}% weekend` : 'is when you actually ship, apparently'}</CardSub>
             </div>
             {data.eventStats.weekendPct != null && (
               <GlassSurface delay={0.15}>
@@ -1155,7 +1163,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
         <>
           <div>
             <CardIcon color={VIBES[v % VIBES.length].accent}>{I.barChart}</CardIcon>
-            <CardHeadline>The raw data</CardHeadline>
+            <CardHeadline>The receipts</CardHeadline>
           </div>
           <GlassSurface delay={0.1}>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -1203,7 +1211,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             </div>
             {data.spotlightRepo && (
               <>
-                <CardSub>{data.spotlightRepo.description || 'Your most starred creation'}</CardSub>
+                <CardSub>{data.spotlightRepo.description || 'Your most starred creation — the one thing people actually noticed'}</CardSub>
                 <MiniBars color={VIBES[v % VIBES.length].accent} items={[
                   { label: 'Stars', value: data.spotlightRepo.stars || 0, max: Math.max(data.spotlightRepo.stars || 0, 10) },
                   { label: 'Forks', value: data.spotlightRepo.forks || 0, max: Math.max(data.spotlightRepo.forks || 0, 10) },
@@ -1234,8 +1242,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             </div>
             {data.biggestRepo && (
               <>
-                <CardSub>{(data.biggestRepo.lines || 0).toLocaleString()} lines of code
-                  {(data.biggestRepo.commits || 0).toLocaleString()} commits</CardSub>
+                <CardSub>{(data.biggestRepo.lines || 0).toLocaleString()} lines of code across {(data.biggestRepo.commits || 0).toLocaleString()} commits</CardSub>
                 <MiniBars color={VIBES[v % VIBES.length].accent} items={[
                   { label: 'Lines', value: data.biggestRepo.lines || 0, max: Math.max(data.biggestRepo.lines || 0, 1000) },
                   { label: 'Commits', value: data.biggestRepo.commits || 0, max: Math.max(data.biggestRepo.commits || 0, 100) },
@@ -1266,7 +1273,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             </div>
             {data.underratedRepo && (
               <>
-                <CardSub>High quality, low visibility. Hidden gem.</CardSub>
+                <CardSub>High quality, low visibility — a hidden gem nobody starred yet. Their loss.</CardSub>
                 <MiniBars color={VIBES[v % VIBES.length].accent} items={[
                   { label: 'Stars', value: data.underratedRepo.stars || 0, max: Math.max(data.underratedRepo.stars || 0, 10) },
                   { label: 'Quality', value: data.underratedRepo.qualityScore || 0, max: 100 },
@@ -1296,7 +1303,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
             </div>
             {data.longestRepo && (
               <>
-                <CardSub>Active for {data.longestRepo.months || 0} months. True dedication.</CardSub>
+                <CardSub>Active for {data.longestRepo.months || 0} months straight. That's a longer commitment than most relationships.</CardSub>
                 <MiniBars color={VIBES[v % VIBES.length].accent} items={[
                   { label: 'Age', value: data.longestRepo.months || 0, max: Math.max(data.longestRepo.months || 0, 12) },
                   { label: 'Commits', value: data.longestRepo.commits || 0, max: Math.max(data.longestRepo.commits || 0, 100) },
@@ -1322,7 +1329,7 @@ ${data.issueCloseRate}% close rate` : ''}</CardSub>
           <>
             <div>
               <CardIcon color={VIBES[v % VIBES.length].accent}>{I.tag}</CardIcon>
-              <CardHeadline>Your recurring themes</CardHeadline>
+              <CardHeadline>What you keep building, on repeat</CardHeadline>
               <CardSub style={{ marginTop: 6 }}>{data.topTopics.length} topics define your work</CardSub>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
